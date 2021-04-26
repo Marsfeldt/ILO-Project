@@ -5,8 +5,7 @@ library(readbulk)
 library(lubridate)
 library(zoo)
 
-# ----------- Import Inspector Data -------------
-
+# ----------- Import: Inspector Data -------------
 ## ----------- Number of labour inspectors by sex (thousands) ---------
 
 # Labour inspectors are public officials or other authorities who are responsible for three key labour inspection 
@@ -49,7 +48,7 @@ InspectorData <- dplyr::full_join(LabourInspectorsSexThousands, InspectorsPer10k
                                   by = NULL, copy = FALSE, 
                                   suffix = c(".LabourInspectorsSexThousands", ".InspectorsPer10kEmployed"), keep = FALSE)
 
-# ----------- Labour inspection visits per inspector ---------
+## ----------- Labour inspection visits per inspector ---------
 
 # This indicator conveys the average number of labour inspection visits conducted by a labour inspector during the 
 # year. Labour inspectors are public officials or other authorities who are responsible for three key labour 
@@ -67,31 +66,47 @@ InspectorData <- dplyr::full_join(LabourInspectorsSexThousands, InspectorsPer10k
 AvgVisitsPerInspectorPerYear <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Inspectors/LAI_VDIN_NOC_RT_A_EN.csv", 
                                          sep = ";", dec=",", header = TRUE)
 
-AvgVisitsPerInspectorPerYear <- dplyr::rename(AvgVisitsPerInspectorPerYear, InspectorsPer10kEmployed = Value)
+AvgVisitsPerInspectorPerYear <- dplyr::rename(AvgVisitsPerInspectorPerYear, AvgVisitsPerInspectorPerYear = Value)
 
 InspectorData <- dplyr::full_join(InspectorData, AvgVisitsPerInspectorPerYear, 
                                   by = NULL, copy = FALSE, 
                                   suffix = c("InspectorData", "AvgVisitsPerInspectorPerYear"), keep = FALSE)
 
+## ----------- Number of labour inspection visits to workplaces during the year ---------
+
+# Labour inspection visits refer to the physical presence of a labour inspector in a workplace for the purpose of 
+# carrying out a labour inspection and which is duly documented as required by national legislation. For more 
+# information, refer to the concepts and definitions page.
 
 NumberLabourInspectionVisitsPerYear <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Inspectors/LAI_VIST_NOC_NB_A_EN.csv", 
-                                         sep = ";", header = TRUE)
+                                         sep = ";", dec=",", header = TRUE)
+
+NumberLabourInspectionVisitsPerYear <- dplyr::rename(NumberLabourInspectionVisitsPerYear, NumberLabourInspectionVisitsPerYear = Value)
 
 InspectorData <- dplyr::full_join(InspectorData, NumberLabourInspectionVisitsPerYear, 
                                   by = NULL, copy = FALSE, 
                                   suffix = c("InspectorData", "NumberLabourInspectionVisitsPerYear"), keep = FALSE)
 
+## ----------- Registered workplaces that could be selected for labour inspection ---------
+
+# A workplace can be defined as any physical space, whether a physical construction (such as a building or set of 
+# buildings) or not, in which at least one employed person carries out their work activities. Only those workplaces 
+# that are registered and could potentially be selected for labour inspection are included in the total number. For 
+# more information, refer to the concepts and definitions page.
 
 RegisteredWorkplacesForLabourInspection <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Inspectors/LAI_WOPL_NOC_NB_A_EN.csv", 
-                                                sep = ";", header = TRUE)
+                                                sep = ";", dec=",", header = TRUE)
+
+RegisteredWorkplacesForLabourInspection <- dplyr::rename(RegisteredWorkplacesForLabourInspection, RegisteredWorkplacesForLabourInspection = Value)
 
 InspectorData <- dplyr::full_join(InspectorData, RegisteredWorkplacesForLabourInspection, 
                                   by = NULL, copy = FALSE, 
                                   suffix = c("InspectorData", "RegisteredWorkplacesForLabourInspection"), keep = FALSE)
 
+# ----------- InspectorData Combined -------------
+
 InspectorData <- dplyr::rename(InspectorData, Country = ï..Reference.area)
 InspectorData <- dplyr::rename(InspectorData, SourceType = Source.type)
-
 
 # ----------- Import: Occupation Data -------------
 ## ----------- Days lost due to cases of occupational injury with temporary incapacity for work by economic activity ---------
@@ -189,8 +204,118 @@ OccupationData <- dplyr::full_join(OccupationData, NonFatalInjuryPer100k,
 OccupationData <- dplyr::rename(OccupationData, Country = ï..Reference.area)
 OccupationData <- dplyr::rename(OccupationData, SourceType = Source.type)
 
-OccupationData[
-  with(OccupationData, order(Country)),
-  ]
+#OccupationData[with(OccupationData, order(Country)),]
 
-save(dfp, file='data_Participants_Raw.rda', compress=TRUE)
+# ----------- Import: Migrants Data -------------
+
+## ----------- Days lost due to cases of occupational injury with temporary incapacity for work by sex and migrant status -----------
+
+# Days lost due to temporary incapacity refers to the total number of calendar days during which those persons 
+# temporarily incapacitated were unable to work, excluding the day of the accident, up to a maximum of one year. 
+# Temporary absences from work of less than one day for medical treatment are not included. For more information, 
+# refer to the concepts and definitions page.
+
+MigrantsDaysLostDueInjury <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Migrants/INJ_DAYS_SEX_MIG_NB_A_EN.csv", 
+                               sep = ";", dec=",", header = TRUE)
+
+MigrantsDaysLostDueInjury['Classifier'] = 'MigrantsDaysLost'
+
+MigrantsDaysLostDueInjury <- MigrantsDaysLostDueInjury %>% relocate(Classifier, .before = Total)
+
+MigrantsData <- MigrantsDaysLostDueInjury
+
+## ----------- Cases of fatal occupational injury by sex and migrant status -------------
+ 
+# A case of occupational injury is the case of a worker incurring an occupational injury as a result of an occupational 
+# accident. An occupational injury that is fatal is the result of an occupational accident where death occurred within 
+# one year from the day of the accident. For more information, refer to the concepts and definitions page.
+
+MigrantsFatalInjury <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Migrants/INJ_FATL_SEX_MIG_NB_A_EN.csv", 
+                                      sep = ";", dec=",", header = TRUE)
+
+MigrantsFatalInjury['Classifier'] = 'MigrantsFatalInjury'
+
+MigrantsFatalInjury <- MigrantsFatalInjury %>% relocate(Classifier, .before = Total)
+
+MigrantsData <- dplyr::full_join(MigrantsData, MigrantsFatalInjury, 
+                                   by = NULL, copy = FALSE, 
+                                   suffix = c("MigrantsData", "MigrantsFatalInjury"), keep = FALSE)
+
+## ----------- Fatal occupational injuries per 100'000 workers by sex and migrant status -------------
+ 
+# The incidence rate is the average number of new cases of fatal occupational injury during the calendar year per 
+# 100,000 workers in the reference group. For more information, refer to the concepts and definitions page.
+
+MigrantsFatalPer100k <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Migrants/INJ_FATL_SEX_MIG_RT_A_EN.csv", 
+                                sep = ";", dec=",", header = TRUE)
+
+MigrantsFatalPer100k['Classifier'] = 'MigrantsFatalPer100k'
+
+MigrantsFatalPer100k <- MigrantsFatalPer100k %>% relocate(Classifier, .before = Total)
+
+MigrantsData <- dplyr::full_join(MigrantsData, MigrantsFatalPer100k, 
+                                 by = NULL, copy = FALSE, 
+                                 suffix = c("MigrantsData", "MigrantsFatalPer100k"), keep = FALSE)
+
+## ----------- Cases of non-fatal occupational injury by sex, type of incapacity and migrant status -------------
+
+# A case of non-fatal occupational injury is the case of a worker incurring a non-fatal occupational injury as a 
+# result of an occupational accident, which entailed a loss of working time. Incapacity for work is the inability of 
+# the victim of an occupational accident, due to an occupational injury, to perform the normal duties of work in the 
+# job or post occupied at the time of the occupational accident. The incapacity for work can be permanent, when the 
+# persons injured were never able to perform again the normal duties of work in the job or post occupied at the time 
+# of the occupational accident causing the injury, or temporary, when the workers injured were unable to work from
+# the day after the day of the accident, but were later able to perform again the normal duties of work in the job or
+# post occupied at the time of the occupational accident causing the injury within a period of one year from the day
+# of the accident. For more information, refer to the concepts and definitions page.
+
+MigrantsLevelOfIncapacity <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Migrants/INJ_NFTL_SEX_INJ_MIG_NB_A_EN.csv", sep = ";", dec=",", header = TRUE)
+
+MigrantsLevelOfIncapacity['Classifier'] = 'MigrantsLevelOfIncapacity'
+
+MigrantsLevelOfIncapacity <- MigrantsLevelOfIncapacity %>% relocate(Classifier, .before = Total)
+
+MigrantsData <- dplyr::full_join(MigrantsData, MigrantsLevelOfIncapacity, 
+                                 by = NULL, copy = FALSE, 
+                                 suffix = c("MigrantsData", "MigrantsLevelOfIncapacity"), keep = FALSE)
+
+
+## ----------- Cases of non-fatal occupational injury by sex and migrant status -------------
+
+# A case of non-fatal occupational injury is the case of a worker incurring an occupational injury as a result of an occupational accident not leading to death. The non-fatal occupational injury entails a loss of working time. For more information, refer to the concepts and definitions page.
+
+MigrantsNonFatalInjury <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Migrants/INJ_NFTL_SEX_MIG_NB_A_EN.csv", sep = ";", dec=",", header = TRUE)
+
+MigrantsNonFatalInjury['Classifier'] = 'MigrantsNonFatalInjury'
+
+MigrantsNonFatalInjury <- MigrantsNonFatalInjury %>% relocate(Classifier, .before = Total)
+
+MigrantsData <- dplyr::full_join(MigrantsData, MigrantsNonFatalInjury, 
+                                 by = NULL, copy = FALSE, 
+                                 suffix = c("MigrantsData", "MigrantsNonFatalInjury"), keep = FALSE)
+
+
+## ----------- Non-fatal occupational injuries per 100'000 workers by sex and migrant status -------------
+
+# The incidence rate is the average number of new cases of non-fatal occupational injury during the calendar year per 100,000 workers in the reference group. For more information, refer to the concepts and definitions page.
+
+MigrantsNonFatalInjuryPer100k <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Migrants/INJ_NFTL_SEX_MIG_RT_A_EN.csv", sep = ";", dec=",", header = TRUE)
+
+MigrantsNonFatalInjuryPer100k['Classifier'] = 'MigrantsNonFatalInjuryPer100k'
+
+MigrantsNonFatalInjuryPer100k <- MigrantsNonFatalInjuryPer100k %>% relocate(Classifier, .before = Total)
+
+MigrantsData <- dplyr::full_join(MigrantsData, MigrantsNonFatalInjuryPer100k, 
+                                 by = NULL, copy = FALSE, 
+                                 suffix = c("MigrantsData", "MigrantsNonFatalInjuryPer100k"), keep = FALSE)
+
+# ----------- MigrantsData Combined ------------
+
+MigrantsData <- dplyr::rename(MigrantsData, Country = ï..Reference.area)
+MigrantsData <- dplyr::rename(MigrantsData, SourceType = Source.type)
+
+# ----------- Save Complete Dataframe ------------
+
+ILOSafetyAndHealth <- 
+
+save(ILOSafetyAndHealth, file='ILOSafetyAndHealth.rda', compress=TRUE)
