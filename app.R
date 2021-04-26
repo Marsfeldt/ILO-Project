@@ -8,9 +8,10 @@
 #
 
 library(shiny)
+library(shinythemes) # find themes here: https://rstudio.github.io/shinythemes/
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("yeti"),
 
     # Application title
     titlePanel("ILO - Project"),
