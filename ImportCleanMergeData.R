@@ -4,7 +4,44 @@ library(tidyverse)
 library(readxl)
 #library(readbulk)
 library(lubridate)
+library(fs)
+library(R.utils)
 #library(zoo)
+
+# ----------- Import: All Data -------------
+
+# Unpack the .gz files. Overwrite exsisting files and save the original
+
+paths <- "./ILO Data/"
+
+pathsGz <- dir_ls(paths, glob = "*.gz")
+pathsGz <- setdiff(pathsGz, "./ILO Data/INJ_DAYS_ECO_NB_A.gz")
+
+walk(pathsGz, ~ gunzip(.x, overwrite = TRUE, remove=FALSE))
+
+#map(pathsGz, ~ unzip(.x, exdir = "UnZip"))
+
+# paths <- "./ILO Data/"
+# 
+# paths %>%
+#   list.files() %>%
+#   .[str_detect(., ".gz")] -> pathsGz2
+# 
+# pathsGz2 <- setdiff(pathsGz2, "./ILO Data/INJ_DAYS_ECO_NB_A.gz")
+
+paths %>%
+  list.files(pattern = "*.csv") -> ILO_file_names
+
+#paths %>% list.files(pattern = "*.csv") %>%   .[str_detect(., ".csv")] -> ILO_file_names
+
+ILO_file_names %>%
+  purrr::map(function(file_name){ # iterate through each file name
+    read_csv2(paste0(ILO_file_names, file_name))
+  }) -> ILO_Data_List
+
+#x <- paths[[1]]
+#gunzip(x, remove=FALSE)
+
 
 # ----------- Import: Inspector Data -------------
 
@@ -12,23 +49,65 @@ Inspector_file_path <- "./Data/Statistics on safety and health at work/CleandedD
 
 Inspector_file_path %>%
   list.files() %>%
-  .[str_detect(., ".csv")] -> csv_file_names
+  .[str_detect(., ".csv")] -> csv_Inspectorfile_names
 
-csv_file_names %>%
+csv_Inspectorfile_names %>%
   purrr::map(function(file_name){ # iterate through each file name
-    read_csv(paste0(Inspector_file_path, file_name))
+    read_csv2(paste0(Inspector_file_path, file_name))
   }) -> InspectorDataList
 
-InspectorDataList %>% 
-  map_dfr(read_csv) %>%
-  mutate(sep = ";", dec=",", header = TRUE)
+csv_Inspectorfile_names %>%
+  purrr::map_df(function(file_name) # iterate through each file name
+    read_csv2(paste0(Inspector_file_path, file_name))
+    %>% mutate(filename=gsub(".csv","",basename(x)))) -> InspectorDataList2
+
+map_df(function(x) read_csv(x, col_types = cols(.default = "c")) %>% mutate(filename=gsub(".csv","",basename(x))))
+
+
+InspectorDataList %>% # https://stackoverflow.com/questions/53800737/how-to-add-corresponding-filename-as-a-new-column-using-tidyverse
+  map2(csv_Inspectorfile_names, ~ map(.x[lengths(.x) > 0], cbind, userid = .y)) %>%
+  transpose(.names = csv_Inspectorfile_names) %>% 
+  map(dplyr::bind_rows)
+
+
+
+
+
+InspectorDataList %>% #https://stackoverflow.com/questions/46616591/rename-multiple-dataframe-columns-using-purrr
+  
+
+# ----------- Import: Migrants Data -------------
+
+Migrants_file_path <- "./Data/Statistics on safety and health at work/CleandedData/Migrants/"
+
+Migrants_file_path %>%
+  list.files() %>%
+  .[str_detect(., ".csv")] -> csv_Migrantsfile_names
+
+csv_Migrantsfile_names %>%
+  purrr::map(function(file_name){ # iterate through each file name
+    read_csv2(paste0(Migrants_file_path, file_name))
+  }) -> MigrantsDataList
+
+
+# ----------- Import: Occupation Data -------------
+
+Occupation_file_path <- "./Data/Statistics on safety and health at work/CleandedData/Occupation/"
+
+Occupation_file_path %>%
+  list.files() %>%
+  .[str_detect(., ".csv")] -> csv_Occupationfile_names
+
+csv_Occupationfile_names %>%
+  purrr::map(function(file_name){ # iterate through each file name
+    read_csv2(paste0(Occupation_file_path, file_name))
+  }) -> OccupationDataList
 
 ## ----------- Number of labour inspectors by sex (thousands) ---------
 
 # Labour inspectors are public officials or other authorities who are responsible for three key labour inspection activities: a) securing the enforcement of the legal provisions relating to conditions of work and the protection of workers while engaged in their work, such as provisions relating to hours, wages, safety, health and welfare, the employment of children and young persons, and other connected matters, in so far as such provisions are enforceable by labour inspectors; b) supplying technical information and advice to employers and workers concerning the most effective means of complying with the legal provisions; c) bringing to the notice of the competent authority defects or abuses not specifically covered by existing legal provisions. Labour inspectors have the authority to initiate processes that may lead to legal action. For more information, refer to the concepts and definitions page.
 
-LabourInspectorsSexThousands <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Inspectors/LAI_INSP_SEX_NB_A_EN.csv", 
-                                         sep = ";", dec=",", header = TRUE)
+LabourInspectorsSexThousands <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Inspectors/LAI_INSP_SEX_NB_A_EN.csv", sep = ";", dec=",", header = TRUE)
 
 LabourInspectorsSexThousands <- dplyr::rename(LabourInspectorsSexThousands, NumberInspectorsThousands = Total)
 
