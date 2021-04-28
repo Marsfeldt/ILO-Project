@@ -1,22 +1,31 @@
 #Import, clean, and merged data
 
 library(tidyverse)
-library(readbulk)
+library(readxl)
+#library(readbulk)
 library(lubridate)
-library(zoo)
+#library(zoo)
 
 # ----------- Import: Inspector Data -------------
+
+Inspector_file_path <- "./Data/Statistics on safety and health at work/CleandedData/Inspectors/"
+
+Inspector_file_path %>%
+  list.files() %>%
+  .[str_detect(., ".csv")] -> csv_file_names
+
+csv_file_names %>%
+  purrr::map(function(file_name){ # iterate through each file name
+    read_csv(paste0(Inspector_file_path, file_name))
+  }) -> InspectorDataList
+
+InspectorDataList %>% 
+  map_dfr(read_csv) %>%
+  mutate(sep = ";", dec=",", header = TRUE)
+
 ## ----------- Number of labour inspectors by sex (thousands) ---------
 
-# Labour inspectors are public officials or other authorities who are responsible for three key labour inspection 
-# activities: a) securing the enforcement of the legal provisions relating to conditions of work and the protection 
-# of workers while engaged in their work, such as provisions relating to hours, wages, safety, health and welfare, 
-# the employment of children and young persons, and other connected matters, in so far as such provisions are 
-# enforceable by labour inspectors; b) supplying technical information and advice to employers and workers 
-# concerning the most effective means of complying with the legal provisions; c) bringing to the notice of the 
-# competent authority defects or abuses not specifically covered by existing legal provisions. Labour inspectors 
-# have the authority to initiate processes that may lead to legal action. For more information, refer to the 
-# concepts and definitions page.
+# Labour inspectors are public officials or other authorities who are responsible for three key labour inspection activities: a) securing the enforcement of the legal provisions relating to conditions of work and the protection of workers while engaged in their work, such as provisions relating to hours, wages, safety, health and welfare, the employment of children and young persons, and other connected matters, in so far as such provisions are enforceable by labour inspectors; b) supplying technical information and advice to employers and workers concerning the most effective means of complying with the legal provisions; c) bringing to the notice of the competent authority defects or abuses not specifically covered by existing legal provisions. Labour inspectors have the authority to initiate processes that may lead to legal action. For more information, refer to the concepts and definitions page.
 
 LabourInspectorsSexThousands <- read.csv("./Data/Statistics on safety and health at work/CleandedData/Inspectors/LAI_INSP_SEX_NB_A_EN.csv", 
                                          sep = ";", dec=",", header = TRUE)
