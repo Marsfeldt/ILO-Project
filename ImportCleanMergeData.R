@@ -29,8 +29,11 @@ walk(pathsGz, ~ gunzip(.x, overwrite = TRUE, remove=FALSE))
 # 
 # pathsGz2 <- setdiff(pathsGz2, "./ILO Data/INJ_DAYS_ECO_NB_A.gz")
 
-paths %>%
-  list.files(pattern = "*.csv") -> ILO_file_names
+ILO_file_names <- as_tibble_col(paths %>%
+                              list.files(pattern = "*.csv"), column_name = "names") %>%
+  filter(!grepl("csv.gz", names, fixed = TRUE))
+
+
 
 #paths %>% list.files(pattern = "*.csv") %>%   .[str_detect(., ".csv")] -> ILO_file_names
 
