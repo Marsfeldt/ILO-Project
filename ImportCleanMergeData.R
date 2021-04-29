@@ -10,41 +10,47 @@ library(R.utils)
 
 # ----------- Import: All Data -------------
 
-# Unpack the .gz files. Overwrite exsisting files and save the original
+# https://www.ilo.org/ilostat-files/WEB_bulk_download/html/bulk_dic.html
 
-paths <- "./ILO Data/"
+# make varible with the path to files that needs to be imported 
+paths <- "./ILO Data/" 
 
+# Create a vector with the path to all the .gz files - ignore other data types
 pathsGz <- dir_ls(paths, glob = "*.gz")
-pathsGz <- setdiff(pathsGz, "./ILO Data/INJ_DAYS_ECO_NB_A.gz")
 
-walk(pathsGz, ~ gunzip(.x, overwrite = TRUE, remove=FALSE))
+# Unpack the .gz files. Overwrite exsisting files (making it easy to update data later), delete the .gz file to save space
+walk(pathsGz, ~ gunzip(.x, overwrite = TRUE))
 
-#map(pathsGz, ~ unzip(.x, exdir = "UnZip"))
+# Create a vector with the path to all the .csv files - ignore other data types
+ILO_file_names <- paths %>% 
+  list.files(pattern = "\\.csv$") 
 
-# paths <- "./ILO Data/"
-# 
-# paths %>%
-#   list.files() %>%
-#   .[str_detect(., ".gz")] -> pathsGz2
-# 
-# pathsGz2 <- setdiff(pathsGz2, "./ILO Data/INJ_DAYS_ECO_NB_A.gz")
-
-ILO_file_names <- as_tibble_col(paths %>%
-                              list.files(pattern = "*.csv"), column_name = "names") %>%
-  filter(!grepl("csv.gz", names, fixed = TRUE))
-
-
-
-#paths %>% list.files(pattern = "*.csv") %>%   .[str_detect(., ".csv")] -> ILO_file_names
-
-ILO_file_names %>%
+# save all the data-sets in one big list
+ILO_Data_List <- ILO_file_names %>%
   purrr::map(function(file_name){ # iterate through each file name
-    read_csv2(paste0(ILO_file_names, file_name))
-  }) -> ILO_Data_List
+    read_csv(paste0(paths, file_name))
+  })
 
-#x <- paths[[1]]
-#gunzip(x, remove=FALSE)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+MigrantsDataList <- ILO_Data_List %>%
+  
+
+unname(map_chr())
+
+# ---------------------------------------------------------------------------------------------------
 
 # ----------- Import: Inspector Data -------------
 
