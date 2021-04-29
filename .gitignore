@@ -2,6 +2,9 @@
 .Rhistory
 .Rapp.history
 
+# RawData I just need it for backup
+.RawData
+
 # Session Data files
 .RData
 

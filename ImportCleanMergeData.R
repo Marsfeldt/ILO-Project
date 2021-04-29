@@ -10,8 +10,6 @@ library(R.utils)
 
 # ----------- Import: All Data -------------
 
-# https://www.ilo.org/ilostat-files/WEB_bulk_download/html/bulk_dic.html
-
 # make varible with the path to files that needs to be imported 
 paths <- "./ILO Data/" 
 
@@ -31,18 +29,34 @@ ILO_Data_List <- ILO_file_names %>%
     read_csv(paste0(paths, file_name))
   })
 
+table(map_chr(ILO_Data_List, ~ read_lines(.x, n_max = 1)))
+
+# ----------- Import and merge: country, indicators and classifier labels -------------
+
+# Labels found here: https://www.ilo.org/ilostat-files/WEB_bulk_download/html/bulk_dic.html
+
+# path to the label files
+pathToLabels <- "./ILO Labels/"
+
+# Create a vector with the path to all the .csv files - ignore other data types
+ILO_file_Labels <- pathToLabels %>% 
+  list.files(pattern = "\\.csv$") 
+
+# save all the label data-sets in one big list
+ILO_Label_List <- ILO_file_Labels %>%
+  purrr::map(function(file_name){ # iterate through each file name
+    read_csv(paste0(pathToLabels, file_name))
+  })  
+
+# Remove unnecessary sorting column 
+ILO_Label_List <- ILO_Label_List %>% 
+  walk( ~ select(.x, -3))
+
+# Merge labes with the data files
 
 
 
-
-
-
-
-
-
-
-
-
+# ----------- Make sublists -------------
 
 
 MigrantsDataList <- ILO_Data_List %>%

@@ -1,0 +1,329 @@
+﻿ref_area, ref_area.label, ref_area.sort
+"X01","World",1
+"X02","World: Low income",2
+"X03","World: Lower-middle income",3
+"X04","World: Upper-middle income",4
+"X05","World: High income",5
+"X06","Africa",6
+"X07","Africa: Low income",7
+"X08","Africa: Lower-middle income",8
+"X09","Africa: Upper-middle income",9
+"X93","Africa: High income",10
+"X10","Northern Africa",11
+"X11","Northern Africa: Lower-middle income",12
+"X12","Northern Africa: Upper-middle income",13
+"X13","Sub-Saharan Africa",14
+"X14","Sub-Saharan Africa: Low income",15
+"X15","Sub-Saharan Africa: Lower-middle income",16
+"X16","Sub-Saharan Africa: Upper-middle income",17
+"X81","Sub-Saharan Africa: High income",18
+"X17","Central Africa",19
+"X18","Eastern Africa",20
+"X19","Southern Africa",21
+"X20","Western Africa",22
+"X21","Americas",23
+"X22","Americas: Low income",24
+"X23","Americas: Lower-middle income",25
+"X24","Americas: Upper-middle income",26
+"X25","Americas: High income",27
+"X26","Latin America and the Caribbean",28
+"X27","Latin America and the Caribbean: Low income",29
+"X28","Latin America and the Caribbean: Lower-middle income",30
+"X29","Latin America and the Caribbean: Upper-middle income",31
+"X30","Latin America and the Caribbean: High income",32
+"X31","Caribbean",33
+"X32","Central America",34
+"X33","South America",35
+"X34","Northern America",36
+"X35","Northern America: High income",37
+"X36","Arab States",38
+"X94","Arab States: Low income",39
+"X37","Arab States: Lower-middle income",40
+"X38","Arab States: Upper-middle income",41
+"X39","Arab States: High income",42
+"X40","Asia and the Pacific",43
+"X41","Asia and the Pacific: Low income",44
+"X42","Asia and the Pacific: Lower-middle income",45
+"X43","Asia and the Pacific: Upper-middle income",46
+"X44","Asia and the Pacific: High income",47
+"X45","Eastern Asia",48
+"X46","Eastern Asia: Low income",49
+"X86","Eastern Asia: Lower-middle income",50
+"X47","Eastern Asia: Upper-middle income",51
+"X48","Eastern Asia: High income",52
+"X49","South-Eastern Asia and the Pacific",53
+"X51","South-Eastern Asia and the Pacific: Lower-middle income",54
+"X52","South-Eastern Asia and the Pacific: Upper-middle income",55
+"X53","South-Eastern Asia and the Pacific: High income",56
+"X54","South-Eastern Asia",57
+"X55","Pacific Islands",58
+"X56","Southern Asia",59
+"X57","Southern Asia: Low income",60
+"X58","Southern Asia: Lower-middle income",61
+"X59","Southern Asia: Upper-middle income",62
+"X60","Europe and Central Asia",63
+"X95","Europe and Central Asia: Low income",64
+"X61","Europe and Central Asia: Lower-middle income",65
+"X62","Europe and Central Asia: Upper-middle income",66
+"X63","Europe and Central Asia: High income",67
+"X64","Northern, Southern and Western Europe",68
+"X65","Northern, Southern and Western Europe: Upper-middle income",69
+"X66","Northern, Southern and Western Europe: High income",70
+"X67","Northern Europe",71
+"X68","Southern Europe",72
+"X69","Western Europe",73
+"X70","Eastern Europe",74
+"X71","Eastern Europe: Lower-middle income",75
+"X72","Eastern Europe: Upper-middle income",76
+"X73","Eastern Europe: High income",77
+"X78","Central and Western Asia",78
+"X96","Central and Western Asia: Low income",79
+"X75","Central and Western Asia: Lower-middle income",80
+"X76","Central and Western Asia: Upper-middle income",81
+"X77","Central and Western Asia: High income",82
+"X74","Central Asia",83
+"X79","Western Asia",84
+"X84","ASEAN",85
+"X85","BRICS",86
+"X92","European Union 27",87
+"X82","European Union 28",88
+"X83","G20",89
+"X87","World excluding BRICS",90
+"X88","G7",91
+"X89","MENA",92
+"X90","Arab League",93
+"X91","CARICOM",94
+"AFG","Afghanistan",95
+"ALB","Albania",96
+"DZA","Algeria",97
+"ASM","American Samoa",98
+"AND","Andorra",99
+"AGO","Angola",100
+"AIA","Anguilla",101
+"ATG","Antigua and Barbuda",102
+"ARG","Argentina",103
+"ARM","Armenia",104
+"ABW","Aruba",105
+"AUS","Australia",106
+"AUT","Austria",107
+"AZE","Azerbaijan",108
+"BHS","Bahamas",109
+"BHR","Bahrain",110
+"BGD","Bangladesh",111
+"BRB","Barbados",112
+"BLR","Belarus",113
+"BEL","Belgium",114
+"BLZ","Belize",115
+"BEN","Benin",116
+"BMU","Bermuda",117
+"BTN","Bhutan",118
+"BOL","Bolivia",119
+"BIH","Bosnia and Herzegovina",120
+"BWA","Botswana",121
+"BRA","Brazil",122
+"VGB","British Virgin Islands",123
+"BRN","Brunei Darussalam",124
+"BGR","Bulgaria",125
+"BFA","Burkina Faso",126
+"BDI","Burundi",127
+"KHM","Cambodia",128
+"CMR","Cameroon",129
+"CAN","Canada",130
+"CPV","Cape Verde",131
+"CYM","Cayman Islands",132
+"CAF","Central African Republic",133
+"TCD","Chad",134
+"CHA","Channel Islands",135
+"CHL","Chile",136
+"CHN","China",137
+"COL","Colombia",138
+"COM","Comoros",139
+"COG","Congo",140
+"COD","Congo, Democratic Republic of the",141
+"COK","Cook Islands",142
+"CRI","Costa Rica",143
+"HRV","Croatia",144
+"CUB","Cuba",145
+"CUW","Curaçao",146
+"CYP","Cyprus",147
+"CZE","Czechia",148
+"CIV","Côte d'Ivoire",149
+"DNK","Denmark",150
+"DJI","Djibouti",151
+"DMA","Dominica",152
+"DOM","Dominican Republic",153
+"ECU","Ecuador",154
+"EGY","Egypt",155
+"SLV","El Salvador",156
+"GNQ","Equatorial Guinea",157
+"ERI","Eritrea",158
+"EST","Estonia",159
+"SWZ","Eswatini",160
+"ETH","Ethiopia",161
+"FRO","Faeroe Islands",162
+"FLK","Falkland Islands (Malvinas)",163
+"FJI","Fiji",164
+"FIN","Finland",165
+"FRA","France",166
+"GUF","French Guiana",167
+"PYF","French Polynesia",168
+"GAB","Gabon",169
+"GMB","Gambia",170
+"GEO","Georgia",171
+"DEU","Germany",172
+"GHA","Ghana",173
+"GIB","Gibraltar",174
+"GRC","Greece",175
+"GRL","Greenland",176
+"GRD","Grenada",177
+"GLP","Guadeloupe",178
+"GUM","Guam",179
+"GTM","Guatemala",180
+"GGY","Guernsey",181
+"GIN","Guinea",182
+"GNB","Guinea-Bissau",183
+"GUY","Guyana",184
+"HTI","Haiti",185
+"HND","Honduras",186
+"HKG","Hong Kong, China",187
+"HUN","Hungary",188
+"ISL","Iceland",189
+"IND","India",190
+"IDN","Indonesia",191
+"IRN","Iran, Islamic Republic of",192
+"IRQ","Iraq",193
+"IRL","Ireland",194
+"IMN","Isle of Man",195
+"ISR","Israel",196
+"ITA","Italy",197
+"JAM","Jamaica",198
+"JPN","Japan",199
+"JEY","Jersey",200
+"JOR","Jordan",201
+"KAZ","Kazakhstan",202
+"KEN","Kenya",203
+"KIR","Kiribati",204
+"PRK","Korea, Democratic People's Republic of",205
+"KOR","Korea, Republic of",206
+"KOS","Kosovo",207
+"KWT","Kuwait",208
+"KGZ","Kyrgyzstan",209
+"LAO","Lao People's Democratic Republic",210
+"LVA","Latvia",211
+"LBN","Lebanon",212
+"LSO","Lesotho",213
+"LBR","Liberia",214
+"LBY","Libya",215
+"LIE","Liechtenstein",216
+"LTU","Lithuania",217
+"LUX","Luxembourg",218
+"MAC","Macau, China",219
+"MDG","Madagascar",220
+"MWI","Malawi",221
+"MYS","Malaysia",222
+"MDV","Maldives",223
+"MLI","Mali",224
+"MLT","Malta",225
+"MHL","Marshall Islands",226
+"MTQ","Martinique",227
+"MRT","Mauritania",228
+"MUS","Mauritius",229
+"MEX","Mexico",230
+"FSM","Micronesia, Federated States of",231
+"MDA","Moldova, Republic of",232
+"MCO","Monaco",233
+"MNG","Mongolia",234
+"MNE","Montenegro",235
+"MSR","Montserrat",236
+"MAR","Morocco",237
+"MOZ","Mozambique",238
+"MMR","Myanmar",239
+"NAM","Namibia",240
+"NRU","Nauru",241
+"NPL","Nepal",242
+"NLD","Netherlands",243
+"ANT","Netherlands Antilles",244
+"NCL","New Caledonia",245
+"NZL","New Zealand",246
+"NIC","Nicaragua",247
+"NER","Niger",248
+"NGA","Nigeria",249
+"NIU","Niue",250
+"NFK","Norfolk Island",251
+"MKD","North Macedonia",252
+"MNP","Northern Mariana Islands",253
+"NOR","Norway",254
+"PSE","Occupied Palestinian Territory",255
+"OMN","Oman",256
+"PAK","Pakistan",257
+"PLW","Palau",258
+"PAN","Panama",259
+"PNG","Papua New Guinea",260
+"PRY","Paraguay",261
+"PER","Peru",262
+"PHL","Philippines",263
+"POL","Poland",264
+"PRT","Portugal",265
+"PRI","Puerto Rico",266
+"QAT","Qatar",267
+"ROU","Romania",268
+"RUS","Russian Federation",269
+"RWA","Rwanda",270
+"REU","Réunion",271
+"SHN","Saint Helena",272
+"KNA","Saint Kitts and Nevis",273
+"LCA","Saint Lucia",274
+"SPM","Saint Pierre and Miquelon",275
+"VCT","Saint Vincent and the Grenadines",276
+"WSM","Samoa",277
+"SMR","San Marino",278
+"STP","Sao Tome and Principe",279
+"SAU","Saudi Arabia",280
+"SEN","Senegal",281
+"SRB","Serbia",282
+"SYC","Seychelles",283
+"SLE","Sierra Leone",284
+"SGP","Singapore",285
+"SVK","Slovakia",286
+"SVN","Slovenia",287
+"SLB","Solomon Islands",288
+"SOM","Somalia",289
+"ZAF","South Africa",290
+"SSD","South Sudan",291
+"ESP","Spain",292
+"LKA","Sri Lanka",293
+"SDN","Sudan",294
+"SUR","Suriname",295
+"SWE","Sweden",296
+"CHE","Switzerland",297
+"SYR","Syrian Arab Republic",298
+"TWN","Taiwan, China",299
+"TJK","Tajikistan",300
+"TZA","Tanzania, United Republic of",301
+"THA","Thailand",302
+"TLS","Timor-Leste",303
+"TGO","Togo",304
+"TKL","Tokelau",305
+"TON","Tonga",306
+"TTO","Trinidad and Tobago",307
+"TUN","Tunisia",308
+"TUR","Turkey",309
+"TKM","Turkmenistan",310
+"TCA","Turks and Caicos Islands",311
+"TUV","Tuvalu",312
+"UGA","Uganda",313
+"UKR","Ukraine",314
+"ARE","United Arab Emirates",315
+"GBR","United Kingdom",316
+"USA","United States",317
+"VIR","United States Virgin Islands",318
+"URY","Uruguay",319
+"UZB","Uzbekistan",320
+"VUT","Vanuatu",321
+"VEN","Venezuela, Bolivarian Republic of",322
+"VNM","Viet Nam",323
+"WLF","Wallis and Futuna Islands",324
+"ESH","Western Sahara",325
+"YEM","Yemen",326
+"ZMB","Zambia",327
+"ZWE","Zimbabwe",328
