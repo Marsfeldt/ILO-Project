@@ -7,6 +7,67 @@ library(lubridate)
 library(fs)
 library(R.utils)
 #library(zoo)
+library(Rilostat)
+library(plotly)
+
+# https://ilostat.github.io/Rilostat/articles/Rilostat.html
+# https://www.ilo.org/ilostat-files/Documents/ILOSTAT_BulkDownload_Guidelines.pdf
+
+toc <- get_ilostat_toc(segment = 'ref_area', lang = 'en')
+toc2 <- get_ilostat_toc(search = 'bargaining')
+
+dat <- get_ilostat(id = 'EIP_2EET_SEX_RT_A', segment = 'indicator') 
+dat2 <- get_ilostat(id = 'ARM_A', segment = 'ref_area') 
+
+
+dat <- get_ilostat(id = c('AFG_A', 'TTO_A'), segment = 'ref_area') 
+dplyr::count(dat, ref_area)
+
+
+# ----------- Vizulize test ---------------
+
+X <- get_ilostat(id = 'EIP_2EET_SEX_RT_A', segment = 'indicator', filters = list(time = '2018', sex = 'T')) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area, ref_area_plotly) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  filter(!obs_value %in% NA) %>%
+  mutate(tot_obs_value = cut(obs_value, 
+                             quantile(obs_value, na.rm = TRUE), 
+                             include.lowest = TRUE))
+
+summary(X)
+
+X %>%   plot_geo( width = 900, height = 600) %>%
+  add_trace(
+    z = ~obs_value, 
+    color = ~obs_value, 
+    colors=c("green", "blue"), 
+    text = ~ref_area.label, 
+    locations = ~ref_area_plotly, 
+    marker = list(line = list(color = toRGB("grey"), width = 0.5)),
+    showscale = TRUE) %>%
+  colorbar(title = '(%)', len = 0.5, ticksuffix="%") %>%
+  layout(
+    title = list(   text = "Share of youth not in employment, education or training (NEET) in 2018",
+                    font = list(size = 18)),
+    font = (size = 1),
+    geo = list( showframe = TRUE,
+                showcoastlines = TRUE,
+                projection = list(type = 'Mercator'),
+                showCountries = TRUE,
+                resolution = 110), 
+    annotations = 
+      list(   x = 1, y = 1,
+              text = "Source: ilostat", 
+              showarrow = F, xref='paper', yref='paper', 
+              xanchor='right', yanchor='auto', xshift=0, yshift=0,
+              font=list(size=15, color="blue"))
+  )
+
+
 
 # ----------- Import: All Data -------------
 
