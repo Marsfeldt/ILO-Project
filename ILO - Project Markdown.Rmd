@@ -7,16 +7,165 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readxl)
+#library(readbulk)
+library(lubridate)
+library(fs)
+library(R.utils)
+#library(zoo)
+library(Rilostat)
+library(plotly)
 ```
 
-## R Markdown
+# Analysis of Fatalities
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Import, clean, and merged data 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+First we download the Fatility data. We download the normalized data per 100.000 worker (INJ_FATL_ECO_RT_A)
 
-```{r cars}
-summary(cars)
+```{r DownloadFatility}
+Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A', 
+                          segment = 'indicator', 
+                          time_format = "num",
+                          filters = list(classif1 = "ECO_AGGREGATE_TOTAL"), 
+                          cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time, classif1) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(TotalFatilitiesNormP100K = obs_value)
+```
+
+Then we download the labor inspection data. Here we download the different datasets:
+
+1. Number of labor inspectors per 10.000 worker (LAI_INDE_NOC_RT_A)
+2. Number of inspections per inspector (LAI_VDIN_NOC_RT_A)
+3. Total number of inspections (LAI_VIST_NOC_NB_A)
+
+```{r DownloadLaborInspector}
+LaborInspectors <- get_ilostat(id = 'LAI_INDE_NOC_RT_A', 
+                              segment = 'indicator', 
+                              time_format = "num",
+                              #filters = list(sex = "SEX_T"), 
+                              cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(LaborInspectorsNormP10K = obs_value)
+
+summary(LaborInspectors)
+
+p <- ggplot(df, aes(x=weight)) + 
+  geom_density()
+
+InspectionsPerInspector <- get_ilostat(id = 'LAI_VDIN_NOC_RT_A', 
+                                segment = 'indicator', 
+                                time_format = "num",
+                                #filters = list(sex = "SEX_T"), 
+                                cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(InspectionsPerInspector = obs_value)
+
+summary(InspectionsPerInspector)
+
+NubLaborInspections <- get_ilostat(id = 'LAI_VIST_NOC_NB_A', 
+                               segment = 'indicator', 
+                               time_format = "num",
+                               #filters = list(sex = "SEX_T"), 
+                               cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(LaborInspections = obs_value)
+
+summary(NubLaborInspections)
+```
+
+Them we combine and clean the data.
+
+```{r CleanAndMergeFatalities}
+CombinedData <- Fatilities %>%
+  dplyr::full_join(LaborInspectorsNormP10K, by = NULL, copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(NubLaborInspections, by = NULL, copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(InspectionsPerInspector, by = NULL, copy = FALSE, keep = FALSE)
+
+col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "LaborInspections")
+
+CombinedData <- CombinedData[, col_order]
+
+CombinedDataNoNA <- CombinedData %>% drop_na()
+```
+
+An initial linear regission analysis explains Fatilities very little (R-squared:  0.0362)
+
+It indicates a very small statical significants. The number of inspections per inspector increases the number of Fatilities
+
+However, the 
+ 
+```{r CleanAndMergeFatalities}
+summary(lm(TotalFatilitiesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = CombinedDataNoNA))
+```
+
+```{r PlotFatalies}
+# Labor Inspectors
+CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+               y = LaborInspectorsNormP10K,
+               #color = factor(time)
+               ),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = T) +
+  theme_bw()
+
+CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+               y = LaborInspectorsNormP10K,
+               color = factor(time)),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = T) +
+  facet_wrap(~ref_area.label) +
+  theme_bw()
+
+CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+               y = InspectionsPerInspector,
+               #color = factor(time)
+               ),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = T) +
+  theme_bw()
+
+CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+               y = InspectionsPerInspector,
+               color = factor(time)),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = T) +
+  facet_wrap(~ref_area.label) +
+  theme_bw()
 ```
 
 ## Including Plots

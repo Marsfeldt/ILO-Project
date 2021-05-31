@@ -13,7 +13,98 @@ library(plotly)
 # https://ilostat.github.io/Rilostat/articles/Rilostat.html
 # https://www.ilo.org/ilostat-files/Documents/ILOSTAT_BulkDownload_Guidelines.pdf
 
+Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A', 
+                          segment = 'indicator', 
+                          time_format = "num",
+                          filters = list(classif1 = "ECO_AGGREGATE_TOTAL"), 
+                          cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time, classif1) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(TotalFatilitiesNormP100K = obs_value)
+
+
+LaborInspectorsNormP10K <- get_ilostat(id = 'LAI_INDE_NOC_RT_A', 
+                              segment = 'indicator', 
+                              time_format = "num",
+                              #filters = list(sex = "SEX_T"), 
+                              cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(LaborInspectorsNormP10K = obs_value)
+
+NubLaborInspections <- get_ilostat(id = 'LAI_VIST_NOC_NB_A', 
+                               segment = 'indicator', 
+                               time_format = "num",
+                               #filters = list(sex = "SEX_T"), 
+                               cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(LaborInspections = obs_value)
+
+InspectionsPerInspector <- get_ilostat(id = 'LAI_VDIN_NOC_RT_A', 
+                                segment = 'indicator', 
+                                time_format = "num",
+                                #filters = list(sex = "SEX_T"), 
+                                cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(InspectionsPerInspector = obs_value)
+
+CombinedData <- Fatilities %>%
+  dplyr::full_join(LaborInspectorsNormP10K, by = NULL, copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(NubLaborInspections, by = NULL, copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(InspectionsPerInspector, by = NULL, copy = FALSE, keep = FALSE)
+
+col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "sex", "LaborInspectorsNormP10K", "InspectionsPerInspector", "LaborInspections")
+
+CombinedData <- CombinedData[, col_order]
+
+CombinedDataNoNA <- CombinedData %>% drop_na()
+
+summary(lm(TotalFatilitiesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = CombinedDataNoNA))
+
+CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+               y = InspectionsPerInspector,
+               color = factor(time)),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = T) +
+  facet_wrap(~ref_area.label) +
+  theme_bw()
+
+
+
+# ----------------------------
+
+
+tocAll <- get_ilostat_toc(lang = 'en')
 toc <- get_ilostat_toc(segment = 'ref_area', lang = 'en')
+tocAll %>% separate(size,c("size", "unit")," ") %>% 
+  mutate(size=as.numeric(size)) %>% 
+  group_by(unit) %>% 
+  summarize(sum(size))
+
+AllData <- map(tocAll, ~ get_ilostat(id = id, segment = 'indicator') )
+
+
 toc2 <- get_ilostat_toc(search = 'bargaining')
 
 dat <- get_ilostat(id = 'EIP_2EET_SEX_RT_A', segment = 'indicator') 
@@ -26,7 +117,18 @@ dplyr::count(dat, ref_area)
 
 # ----------- Vizulize test ---------------
 
-X <- get_ilostat(id = 'EIP_2EET_SEX_RT_A', segment = 'indicator', filters = list(time = '2018', sex = 'T')) %>% 
+
+
+
+
+
+
+
+
+X <- get_ilostat(id = 'EIP_2EET_SEX_RT_A', 
+                 segment = 'indicator', 
+                 filters = list(time = '2018', sex = 'T'), 
+                 cache = FALSE) %>% 
   filter(str_sub(ref_area,1,1) != 'X') %>%
   select(ref_area, obs_value) %>%
   left_join(Rilostat:::ilostat_ref_area_mapping %>%
@@ -68,6 +170,43 @@ X %>%   plot_geo( width = 900, height = 600) %>%
   )
 
 
+Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A', 
+                              segment = 'indicator', 
+                              time_format = "num",
+                              filters = list(classif1 = "ECO_AGGREGATE_TOTAL"), 
+                              cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time, classif1) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(TotalFatilitiesNormP100K = obs_value)
+
+
+FatilitiesTime <- get_ilostat(id = 'INJ_FATL_ECO_RT_A', 
+                              segment = 'indicator', 
+                              time_format = "num",
+                              filters = list(classif1 = "ECO_AGGREGATE_TOTAL"), 
+                              cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time, classif1) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(TotalFatilitiesNormP100K = obs_value)
+
+
+summary(lm(obs_value ~ time, data = FatilitiesTime))
+
+FatilitiesTime %>% ggplot(aes(x = time, 
+                              y = obs_value),
+                          ) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = F) +
+  theme_bw()
 
 # ----------- Import: All Data -------------
 
@@ -78,7 +217,7 @@ paths <- "./ILO Data/"
 pathsGz <- dir_ls(paths, glob = "*.gz")
 
 # Unpack the .gz files. Overwrite exsisting files (making it easy to update data later), delete the .gz file to save space
-walk(pathsGz, ~ gunzip(.x, overwrite = TRUE))
+map(pathsGz, ~ gunzip(.x, overwrite = TRUE))
 
 # Create a vector with the path to all the .csv files - ignore other data types
 ILO_file_names <- paths %>% 
