@@ -3,6 +3,7 @@ title: "ILO - Project Markdown"
 author: "Milo Skovfoged"
 date: "27/4/2021"
 output:
+  word_document: default
   pdf_document: default
   html_document: default
 ---
@@ -27,7 +28,7 @@ library(plotly)
 
 First we download the Fatility data. We download the normalized data per 100.000 worker (INJ_FATL_ECO_RT_A)
 
-```{r DownloadFatility}
+```{r DownloadFatility, include=FALSE}
 Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A', 
                           segment = 'indicator', 
                           time_format = "num",
@@ -40,6 +41,9 @@ Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A',
               label_ilostat(code = 'ref_area'),
             by = "ref_area") %>%
   rename(TotalFatilitiesNormP100K = obs_value)
+
+Fatilities %>% ggplot(aes(x=TotalFatilitiesNormP100K)) + 
+  geom_density()
 ```
 
 Then we download the labor inspection data. Here we download the different datasets:
@@ -48,7 +52,7 @@ Then we download the labor inspection data. Here we download the different datas
 2. Number of inspections per inspector (LAI_VDIN_NOC_RT_A)
 3. Total number of inspections (LAI_VIST_NOC_NB_A)
 
-```{r DownloadLaborInspector}
+```{r DownloadLaborInspector, echo=FALSE}
 LaborInspectors <- get_ilostat(id = 'LAI_INDE_NOC_RT_A', 
                               segment = 'indicator', 
                               time_format = "num",
@@ -96,24 +100,24 @@ NubLaborInspections <- get_ilostat(id = 'LAI_VIST_NOC_NB_A',
               select(ref_area) %>%
               label_ilostat(code = 'ref_area'),
             by = "ref_area") %>%
-  rename(LaborInspections = obs_value)
+  rename(TotalLaborInspections = obs_value)
 
 summary(NubLaborInspections)
 
-InspectionsPerInspector %>% ggplot(aes(x=NubLaborInspections)) + 
+NubLaborInspections %>% ggplot(aes(x=TotalLaborInspections)) + 
   geom_density()
 
 ```
 
 Them we combine and clean the data.
 
-```{r CleanAndMergeFatalities}
+```{r CleanAndMergeFatalities, echo=FALSE}
 CombinedData <- Fatilities %>%
-  dplyr::full_join(LaborInspectorsNormP10K, by = NULL, copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(LaborInspectors, by = NULL, copy = FALSE, keep = FALSE) %>%
   dplyr::full_join(NubLaborInspections, by = NULL, copy = FALSE, keep = FALSE) %>%
   dplyr::full_join(InspectionsPerInspector, by = NULL, copy = FALSE, keep = FALSE)
 
-col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "LaborInspections")
+col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "TotalLaborInspections")
 
 CombinedData <- CombinedData[, col_order]
 
@@ -126,11 +130,11 @@ It indicates a very small statical significants. The number of inspections per i
 
 However, the 
  
-```{r CleanAndMergeFatalities}
+```{r SummeryOfData, echo = FALSE}
 summary(lm(TotalFatilitiesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = CombinedDataNoNA))
 ```
 
-```{r PlotFatalies}
+```{r PlotFatalies, echo=FALSE}
 # Labor Inspectors
 CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = LaborInspectorsNormP10K,
@@ -145,7 +149,7 @@ CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K,
 
 CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = LaborInspectorsNormP10K,
-               color = factor(time)),
+               color = time),
                alpha(0.5),
 ) + 
   geom_point() +
@@ -156,7 +160,7 @@ CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K,
 
 CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = InspectionsPerInspector,
-               #color = factor(time)
+               color = time
                ),
                alpha(0.5),
 ) + 
@@ -167,7 +171,7 @@ CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K,
 
 CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = InspectionsPerInspector,
-               color = factor(time)),
+               color = time),
                alpha(0.5),
 ) + 
   geom_point() +
@@ -182,7 +186,7 @@ CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K,
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-plot(pressure)
+#plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
