@@ -20,19 +20,23 @@ library(R.utils)
 #library(zoo)
 library(Rilostat)
 library(plotly)
+library(hrbrthemes)
+library(GGally)
+library(viridis)
 ```
 
 # Analysis of Fatalities
 
 ## Import, clean, and merged data 
 
-First we download the Fatility data. We download the normalized data per 100.000 worker (INJ_FATL_ECO_RT_A)
+First we download the Fatility data. We download the normalized data per 100.000 worker (SDG_F881_SEX_MIG_RT_A)
 
-```{r DownloadFatility, include=FALSE}
-Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A', 
+```{r DownloadFatility, echo=FALSE}
+Fatilities <- get_ilostat(id = 'SDG_F881_SEX_MIG_RT_A', 
                           segment = 'indicator', 
                           time_format = "num",
-                          filters = list(classif1 = "ECO_AGGREGATE_TOTAL"), 
+                          filters = list(sex ="SEX_T",
+                                         classif1 = "MIG_STATUS_TOTAL"), 
                           cache = FALSE) %>% 
   filter(str_sub(ref_area,1,1) != 'X') %>%
   select(ref_area, obs_value, time, classif1) %>%
@@ -42,15 +46,21 @@ Fatilities <- get_ilostat(id = 'INJ_FATL_ECO_RT_A',
             by = "ref_area") %>%
   rename(TotalFatilitiesNormP100K = obs_value)
 
-Fatilities %>% ggplot(aes(x=TotalFatilitiesNormP100K)) + 
-  geom_density()
+summary(Fatilities)
+
+Fatilities %>%
+  filter(TotalFatilitiesNormP100K < 25) %>%
+  ggplot(aes(x=TotalFatilitiesNormP100K)) + 
+  geom_density() +  
+  #geom_vline(aes(xintercept=median(TotalFatilitiesNormP100K)),
+  #          color="blue", linetype="dashed", size=1) +
+  theme_bw()
 ```
 
 Then we download the labor inspection data. Here we download the different datasets:
 
 1. Number of labor inspectors per 10.000 worker (LAI_INDE_NOC_RT_A)
-2. Number of inspections per inspector (LAI_VDIN_NOC_RT_A)
-3. Total number of inspections (LAI_VIST_NOC_NB_A)
+
 
 ```{r DownloadLaborInspector, echo=FALSE}
 LaborInspectors <- get_ilostat(id = 'LAI_INDE_NOC_RT_A', 
@@ -69,7 +79,15 @@ LaborInspectors <- get_ilostat(id = 'LAI_INDE_NOC_RT_A',
 summary(LaborInspectors)
 
 LaborInspectors %>% ggplot(aes(x=LaborInspectorsNormP10K)) + 
-  geom_density()
+  geom_density() +  
+  #geom_vline(aes(xintercept=median(LaborInspectorsNormP10K)),
+  #          color="blue", linetype="dashed", size=1)+
+  theme_bw()
+```
+
+2. Number of inspections per inspector (LAI_VDIN_NOC_RT_A)
+
+```{r DownloadInspectionsPerInspector, echo=FALSE}
 
 InspectionsPerInspector <- get_ilostat(id = 'LAI_VDIN_NOC_RT_A', 
                                 segment = 'indicator', 
@@ -87,7 +105,15 @@ InspectionsPerInspector <- get_ilostat(id = 'LAI_VDIN_NOC_RT_A',
 summary(InspectionsPerInspector)
 
 InspectionsPerInspector %>% ggplot(aes(x=InspectionsPerInspector)) + 
-  geom_density()
+  geom_density()+  
+  #geom_vline(aes(xintercept=median(InspectionsPerInspector)),
+  #          color="blue", linetype="dashed", size=1)+
+  theme_bw()
+```
+
+3. Total number of inspections (LAI_VIST_NOC_NB_A)
+
+```{r DownloadNumLaborInspections, echo=FALSE}
 
 NubLaborInspections <- get_ilostat(id = 'LAI_VIST_NOC_NB_A', 
                                segment = 'indicator', 
@@ -105,60 +131,67 @@ NubLaborInspections <- get_ilostat(id = 'LAI_VIST_NOC_NB_A',
 summary(NubLaborInspections)
 
 NubLaborInspections %>% ggplot(aes(x=TotalLaborInspections)) + 
-  geom_density()
+  geom_density()+  
+  #geom_vline(aes(xintercept=median(TotalLaborInspections)),
+  #          color="blue", linetype="dashed", size=1)+
+  theme_bw()
 
 ```
 
 Them we combine and clean the data.
 
 ```{r CleanAndMergeFatalities, echo=FALSE}
-CombinedData <- Fatilities %>%
-  dplyr::full_join(LaborInspectors, by = NULL, copy = FALSE, keep = FALSE) %>%
-  dplyr::full_join(NubLaborInspections, by = NULL, copy = FALSE, keep = FALSE) %>%
-  dplyr::full_join(InspectionsPerInspector, by = NULL, copy = FALSE, keep = FALSE)
+CombinedFatilityData <- Fatilities %>%
+  dplyr::full_join(LaborInspectors, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(NubLaborInspections, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(InspectionsPerInspector, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE)
 
 col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "TotalLaborInspections")
 
-CombinedData <- CombinedData[, col_order]
+CombinedFatilityData <- CombinedFatilityData[, col_order]
 
-CombinedDataNoNA <- CombinedData %>% drop_na()
+CombinedFatilityDataNoNA <- CombinedFatilityData %>% drop_na()
+
+skimmedDownCombinedFatilityDataNoNA <- CombinedFatilityDataNoNA[CombinedFatilityDataNoNA$ref_area %in% names(which(table(CombinedFatilityDataNoNA$ref_area) > 4)), ]
+
+summary(skimmedDownCombinedFatilityDataNoNA)
 ```
 
-An initial linear regission analysis explains Fatilities very little (R-squared:  0.0362)
+An initial linear regission analysis explains Fatilities very little (R-squared:  0.04)
 
 It indicates a very small statical significants. The number of inspections per inspector increases the number of Fatilities
 
 However, the 
  
-```{r SummeryOfData, echo = FALSE}
-summary(lm(TotalFatilitiesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = CombinedDataNoNA))
+```{r SummeryOfFatilityData, echo = FALSE}
+summary(lm(TotalFatilitiesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = skimmedDownCombinedFatilityDataNoNA))
 ```
 
 ```{r PlotFatalies, echo=FALSE}
 # Labor Inspectors
-CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+skimmedDownCombinedFatilityDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = LaborInspectorsNormP10K,
-               #color = factor(time)
+               color = time
                ),
                alpha(0.5),
 ) + 
   geom_point() +
   geom_smooth(method=lm,
-              se = T) +
+              se = F) +
   theme_bw()
 
-CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+skimmedDownCombinedFatilityDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = LaborInspectorsNormP10K,
                color = time),
                alpha(0.5),
 ) + 
   geom_point() +
   geom_smooth(method=lm,
-              se = T) +
+              se = F) +
   facet_wrap(~ref_area.label) +
   theme_bw()
 
-CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+skimmedDownCombinedFatilityDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = InspectionsPerInspector,
                color = time
                ),
@@ -166,27 +199,189 @@ CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K,
 ) + 
   geom_point() +
   geom_smooth(method=lm,
-              se = T) +
+              se = F) +
   theme_bw()
 
-CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K, 
+skimmedDownCombinedFatilityDataNoNA %>% 
+  ggplot(aes(x = TotalFatilitiesNormP100K, 
                y = InspectionsPerInspector,
+               color = time,
+               alpha = 0.5)
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = F) +
+  facet_wrap(~ref_area.label) +
+  theme_bw()
+```
+
+# Analysis of injuries
+
+```{r DownloadInjury, echo=FALSE}
+Injuries <- get_ilostat(id = 'SDG_N881_SEX_MIG_RT_A', 
+                          segment = 'indicator', 
+                          time_format = "num",
+                          filters = list(sex ="SEX_T",
+                                         classif1 = "MIG_STATUS_TOTAL"
+                                         #year = c(2010,2011,2012,2013,2014,2015,2016,2017,2018,2019)
+                                         ), 
+                          cache = FALSE) %>% 
+  filter(str_sub(ref_area,1,1) != 'X') %>%
+  select(ref_area, obs_value, time, classif1) %>%
+  left_join(Rilostat:::ilostat_ref_area_mapping %>%
+              select(ref_area) %>%
+              label_ilostat(code = 'ref_area'),
+            by = "ref_area") %>%
+  rename(TotalInjuriesNormP100K = obs_value)
+
+summary(Injuries)
+
+Injuries %>%
+  filter(TotalInjuriesNormP100K < 2000) %>%
+  ggplot(aes(x=TotalInjuriesNormP100K)) + 
+  geom_density() +  
+  #geom_vline(aes(xintercept=median(TotalFatilitiesNormP100K)),
+  #          color="blue", linetype="dashed", size=1) +
+  theme_bw()
+```
+
+
+Them we combine and clean the injury data.
+
+```{r CleanAndMergeInjury, echo=FALSE}
+CombinedInjuryData <- Injuries %>%
+  dplyr::full_join(LaborInspectors, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(NubLaborInspections, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE) %>%
+  dplyr::full_join(InspectionsPerInspector, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE)
+
+col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalInjuriesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "TotalLaborInspections")
+
+CombinedInjuryData <- CombinedInjuryData[, col_order]
+
+CombinedInjuryDataNoNA <- CombinedInjuryData %>% drop_na()
+```
+
+
+```{r SummeryOfInjuryData, echo = FALSE}
+summary(lm(TotalInjuriesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = CombinedInjuryDataNoNA))
+```
+
+```{r PlotInjuries, echo=FALSE}
+# Labor Inspectors
+CombinedInjuryDataNoNA %>% ggplot(aes(x = TotalInjuriesNormP100K, 
+               y = LaborInspectorsNormP10K,
+               color = time
+               ),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = F) +
+  theme_bw()
+
+CombinedInjuryDataNoNA %>% 
+  filter(LaborInspectorsNormP10K < 25) %>%
+  ggplot(aes(y = TotalInjuriesNormP100K, 
+               x = LaborInspectorsNormP10K,
                color = time),
                alpha(0.5),
 ) + 
   geom_point() +
   geom_smooth(method=lm,
-              se = T) +
+              se = F) +
+  facet_wrap(~ref_area.label) +
+  theme_bw()
+
+CombinedInjuryDataNoNA %>% ggplot(aes(x = TotalInjuriesNormP100K, 
+               y = InspectionsPerInspector,
+               color = time
+               ),
+               alpha(0.5),
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = F) +
+  theme_bw()
+
+CombinedInjuryDataNoNA %>% ggplot(aes(y = TotalInjuriesNormP100K, 
+               x = InspectionsPerInspector,
+               color = time,
+               alpha = 0.5)
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = F) +
   facet_wrap(~ref_area.label) +
   theme_bw()
 ```
 
-## Including Plots
+# Parallel Coordinates Chart
 
-You can also embed plots, for example:
+```{r ParallelCoordinatesChart, echo=FALSE}
 
-```{r pressure, echo=FALSE}
-#plot(pressure)
+skimmedDownCombinedFatilityDataNoNA %>% 
+  ggplot(aes(x = TotalFatilitiesNormP100K, 
+               y = InspectionsPerInspector,
+               color = time,
+               alpha = 0.5)
+) + 
+  geom_point() +
+  geom_smooth(method=lm,
+              se = F) +
+  facet_wrap(~ref_area.label) +
+  theme_bw()
+
+ggparcoord(skimmedDownCombinedFatilityDataNoNA,
+    columns = 5:7, groupColumn = 2,
+    showPoints = TRUE, 
+    alphaLines = 0.3
+    )+
+  theme_ipsum()
+
+
+skimmedDownCombinedDataNoNA <- skimmedDownCombinedFatilityDataNoNA %>%
+  dplyr::full_join(Injuries, by = c("ref_area", "time", "ref_area.label", "classif1"), copy = FALSE, keep = FALSE) %>% drop_na()
+
+skimmedDownCombinedDataNoNA <- skimmedDownCombinedDataNoNA %>% 
+  mutate(InspectorsTimesInspactions = LaborInspectorsNormP10K * InspectionsPerInspector)
+
+col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "TotalInjuriesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "InspectorsTimesInspactions", "TotalLaborInspections")
+
+skimmedDownCombinedDataNoNA <- skimmedDownCombinedDataNoNA[, col_order]
+
+ggparcoord(skimmedDownCombinedDataNoNA,
+    columns = 5:9, groupColumn = 2,
+    scale="center",
+    showPoints = TRUE, 
+    alphaLines = 0.3
+    )+
+  theme_ipsum()
+
+skimmedDownCombinedDataNoNAMean <- skimmedDownCombinedDataNoNA %>%
+  group_by(ref_area.label) %>%
+  dplyr::summarize(mTotalFatilitiesNormP100K = mean(TotalFatilitiesNormP100K),
+         meanTotalInjuriesNormP100K = mean(TotalInjuriesNormP100K),
+         meanLaborInspectorsNormP10K = mean(LaborInspectorsNormP10K),
+         meanInspectionsPerInspector = mean(InspectionsPerInspector),
+         meanInspectorsTimesInspactions = mean(InspectorsTimesInspactions))
+  
+ggparcoord(skimmedDownCombinedDataNoNAMean,
+    columns = 2:6, groupColumn = 1,
+    scale="center",
+    showPoints = TRUE, 
+    alphaLines = 0.3
+    )+
+  theme_ipsum()
+
+
+
+skimmedDownCombinedDataNoNA %>% 
+  # group by city
+  group_by(ref_area.label) %>%
+  # initiate a plotly object with date on x and median on y
+  plot_ly(x = ~time, y = ~TotalFatilitiesNormP100K) %>%
+  # add a line plot for all texan cities
+  add_lines( hoverinfo = "none", 
+            type = "scatter", mode = "lines", 
+            line = list(color = 'rgba(192,192,192,0.4)'))
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
