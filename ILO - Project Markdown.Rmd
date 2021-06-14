@@ -373,8 +373,6 @@ ggparcoord(skimmedDownCombinedDataNoNAMean,
     )+
   theme_ipsum()
 
-
-
 skimmedDownCombinedDataNoNA %>% 
   # group by city
   group_by(ref_area.label) %>%

@@ -90,7 +90,7 @@ CombinedDataNoNA %>% ggplot(aes(x = TotalFatilitiesNormP100K,
   facet_wrap(~ref_area.label) +
   theme_bw()
 
-
+skimmedDown <- CombinedDataNoNA[CombinedDataNoNA$ref_area %in% names(which(table(CombinedDataNoNA$ref_area) > 4)), ]
 
 # ----------------------------
 
