@@ -168,7 +168,7 @@ Country_Analysis <- function(input, output, session, df) {
 
 
   output$Explanation_IndependentVariable1 <- renderUI({
-    str1 <- paste(h3("Plot over ", var$Name, "and", var$IndepVariable1))
+    str1 <- paste(h3(var$Name, "and", var$IndepVariable1))
     str2 <- paste("The following plot shows ", var$Name, "(y-axis) and ", var$IndepVariable1, "(x-axis). A linear reggersion line is shown.")
     Explanation_IndependentVariable1 <- HTML(paste(str1, str2, sep = "<br/>"))
 
@@ -177,7 +177,7 @@ Country_Analysis <- function(input, output, session, df) {
   })
 
   output$Explanation_IndependentVariable2 <- renderUI({
-    str1 <- paste(h3("Plot over ", var$Name, "and", var$IndepVariable2))
+    str1 <- paste(h3(var$Name, "and", var$IndepVariable2))
     str2 <- paste("The following plot shows ", var$Name, "(y-axis) and ", var$IndepVariable2, "(x-axis). A linear reggersion line is shown.")
     Explanation_IndependentVariable2 <- HTML(paste(str1, str2, sep = "<br/>"))
 
