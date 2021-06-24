@@ -64,7 +64,7 @@ Import_Data <- function(input, output, session) {
       
       #dfMean <- dfMean[, col_order]
       
-      toReturn$datasetInput <- GetHealthData(df)
+      toReturn$datasetInput <- df
       toReturn$datasetInputMean <- dfMean
       toReturn$trigger <- toReturn$trigger + 1
       #browser()

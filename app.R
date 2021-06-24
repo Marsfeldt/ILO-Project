@@ -1,7 +1,7 @@
 # This is the R shiny application for the ILO-Project. In which we try to visulize and compare the data on Health and safty
 
 library(shiny) # How to build R Shiny application here: http://shiny.rstudio.com/
-library(shinythemes) # find themes here: https://rstudio.github.io/shinythemes/
+#library(shinythemes) # find themes here: https://rstudio.github.io/shinythemes/
 library(tidyverse)
 library(magrittr)
 library(readxl)
