@@ -3,6 +3,7 @@
 library(shiny) # How to build R Shiny application here: http://shiny.rstudio.com/
 library(shinythemes) # find themes here: https://rstudio.github.io/shinythemes/
 library(tidyverse)
+library(magrittr)
 library(readxl)
 library(lubridate)
 library(fs)
@@ -12,6 +13,7 @@ library(plotly)
 library(hrbrthemes)
 library(GGally)
 library(viridis)
+library(broom)
 
 # shiny.fullstacktrace: prints full error messages from R Shiny for debugging.
 options(shiny.fullstacktrace = TRUE)
@@ -20,318 +22,92 @@ options(shiny.fullstacktrace = TRUE)
 # https://ilostat.github.io/Rilostat/articles/Rilostat.html
 # https://www.ilo.org/ilostat-files/Documents/ILOSTAT_BulkDownload_Guidelines.pdf
 
-# Import Data ----
-# Data for Fatilities ----
-Fatilities <- get_ilostat(
-  id = "SDG_F881_SEX_MIG_RT_A",
-  segment = "indicator",
-  time_format = "num",
-  filters = list(
-    sex = "SEX_T",
-    classif1 = "MIG_STATUS_TOTAL"
-  ),
-  cache = FALSE
-) %>%
-  filter(str_sub(ref_area, 1, 1) != "X") %>%
-  select(ref_area, obs_value, time, classif1) %>%
-  left_join(Rilostat:::ilostat_ref_area_mapping %>%
-              select(ref_area) %>%
-              label_ilostat(code = "ref_area"),
-            by = "ref_area"
-  ) %>%
-  rename(TotalFatilitiesNormP100K = obs_value)
+# import modules:
+source("modules/Import_Data_module.R", local = T)
+source("modules/Overview_Main_module.R", local = T)
+source("modules/Summary_of_Data_module.R", local = T)
+source("modules/Summary_of_Data_Raw_module.R", local = T)
+source("modules/Table_Data_module.R", local = T)
+source("modules/Table_Data_Mean_module.R", local = T)
+source("modules/plot_Paralle_module.R", local = T)
+source("modules/plot_Paralle_Mean_module.R", local = T)
+source("modules/Predict_All_Country_module.R", local = T)
+source("modules/Country_Analysis_module.R", local = T)
 
-# Data for Injuries ------
-Injuries <- get_ilostat(
-  id = "SDG_N881_SEX_MIG_RT_A",
-  segment = "indicator",
-  time_format = "num",
-  filters = list(
-    sex = "SEX_T",
-    classif1 = "MIG_STATUS_TOTAL"
-    # year = c(2010,2011,2012,2013,2014,2015,2016,2017,2018,2019)
-  ),
-  cache = FALSE
-) %>%
-  filter(str_sub(ref_area, 1, 1) != "X") %>%
-  select(ref_area, obs_value, time, classif1) %>%
-  left_join(Rilostat:::ilostat_ref_area_mapping %>%
-              select(ref_area) %>%
-              label_ilostat(code = "ref_area"),
-            by = "ref_area"
-  ) %>%
-  rename(TotalInjuriesNormP100K = obs_value)
-
-# Data for Labor Inspectors per 10K worker -------
-LaborInspectors <- get_ilostat(
-  id = "LAI_INDE_NOC_RT_A",
-  segment = "indicator",
-  time_format = "num",
-  # filters = list(sex = "SEX_T"),
-  cache = FALSE
-) %>%
-  filter(str_sub(ref_area, 1, 1) != "X") %>%
-  select(ref_area, obs_value, time) %>%
-  left_join(Rilostat:::ilostat_ref_area_mapping %>%
-              select(ref_area) %>%
-              label_ilostat(code = "ref_area"),
-            by = "ref_area"
-  ) %>%
-  rename(LaborInspectorsNormP10K = obs_value)
-
-# Data for number inspections per inspector ------
-InspectionsPerInspector <- get_ilostat(
-  id = "LAI_VDIN_NOC_RT_A",
-  segment = "indicator",
-  time_format = "num",
-  # filters = list(sex = "SEX_T"),
-  cache = FALSE
-) %>%
-  filter(str_sub(ref_area, 1, 1) != "X") %>%
-  select(ref_area, obs_value, time) %>%
-  left_join(Rilostat:::ilostat_ref_area_mapping %>%
-              select(ref_area) %>%
-              label_ilostat(code = "ref_area"),
-            by = "ref_area"
-  ) %>%
-  rename(InspectionsPerInspector = obs_value)
-
-# Combine the Data -----
-HealtySafetyCombinedData <- Fatilities %>%
-  dplyr::full_join(Injuries, by = c("ref_area", "time", "ref_area.label", "classif1"), copy = FALSE, keep = FALSE) %>%
-  dplyr::full_join(LaborInspectors, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE) %>%
-  dplyr::full_join(InspectionsPerInspector, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE)
-
-col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "TotalInjuriesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector")
-
-HealtySafetyCombinedData <- HealtySafetyCombinedData[, col_order]
-
-HealtySafetyCombinedData <- HealtySafetyCombinedData %>% drop_na() 
-
-HealtySafetyCombinedData <- HealtySafetyCombinedData[HealtySafetyCombinedData$ref_area %in% names(which(table(HealtySafetyCombinedData$ref_area) > 4)), ] 
-
-HealtySafetyCombinedData <- HealtySafetyCombinedData %>%
-  rename(Country = ref_area.label,
-         Year = time) %>%
-  select(-c(ref_area, classif1)) %>%
-  mutate(Year = round(Year, digits = 0))
-
-HealtySafetyCombinedDataMean <- HealtySafetyCombinedData %>%
-  group_by(Country) %>%
-  dplyr::summarize(mTotalFatilitiesNormP100K = mean(TotalFatilitiesNormP100K),
-                   meanTotalInjuriesNormP100K = mean(TotalInjuriesNormP100K),
-                   meanLaborInspectorsNormP10K = mean(LaborInspectorsNormP10K),
-                   meanInspectionsPerInspector = mean(InspectionsPerInspector))
-
-# Define UI for application ----
+# # Define UI for application ----
 ui <- navbarPage("ILO - Project",
   theme = shinytheme("yeti"),
 
   # Overview tap where the user can get an overview of the data -----
   tabPanel(
     "Overview and perdictions of data",
-    # Sidebar layout with input and output definitions 
+    # Sidebar layout with input and output definitions
     sidebarLayout(
-      # Sidebar panel for inputs 
+      # Sidebar panel for inputs
       sidebarPanel(
+        width = 3,
         helpText("Welcome! The International Labor Organization (ILO) provides data on a long list of topics. For this prototype we have decided to focus on Healt and Safety - with the possiblity to add more topics later. This side provides you with an oveverview of the data on the specific topic"),
 
-        # Input: Selector for choosing dataset 
-        selectInput(
-          inputId = "SelectTopic",
-          label = "Choose a Topic:",
-          choices = c(
-            "Health and Safety" = "HealthSafetyData",
-            "Child Labour" = "ChildLabourData",
-            "..." = "..."
-          )
-        ),
+        # Input: Selector for choosing dataset
+        Import_Data_UI("ImportData")
       ),
 
-      # Main panel for displaying outputs ----
+      # Main panel for displaying outputs
       mainPanel(
         tabsetPanel(
-          tabPanel("Average Data over time per country",
-                   # Output: Diagram ----
-                   verbatimTextOutput("summaryFatility"),
-                   plotOutput("ParallePlotMean"),
-                   tableOutput("TableDataMean")
+          tabPanel(
+            width = 10,
+            "Average Data over time per country",
+            Summary_of_Data_UI("Sum"),
+            plot_Paralle_Mean_UI("Paralle_Plot_Mean"),
+            Table_Data_Mean_UI("Table_With_Mean_Data")
           ),
-          tabPanel("Raw data per country",
-            # Output: Formatted text for caption ----
-            #h3("Paralle plot"),
-            plotOutput("ParallePlot"),
-            tableOutput("TableData")
+          tabPanel(
+            width = 10,
+            "Predictions Per Country",
+            Country_Analysis_UI("Country_Analysis")
+          ),
+          tabPanel(
+            "Overview of Raw Data",
+            Summary_of_Data_Raw_UI("SumRaw"),
+            plot_Paralle_UI("Paralle_Plot"),
+            Table_Data_UI("Table_With_Data")
+          ),
+          tabPanel(
+            "Overview of Raw Data Per Countries",
+            Predict_All_Country_UI("Predict_Country")
           )
         )
-      ),
-    ),
-  ),
-  # Combine tap where the user can get perdictions based on the topic -----
-  tabPanel(
-    "Detailed Data Perdiction",
-    # Sidebar layout with input and output definitions 
-    sidebarLayout(
-      sidebarPanel(
-        helpText("Welcome! Use data provided by ILO to perdict the effect"),
-
-        # Input: Selector for choosing dataset 
-        selectInput(
-          inputId = "SelectTopic",
-          label = "Choose a Topic:",
-          choices = c(
-            "Safety and Health" = "HealthSaftyData",
-            "Child Labour" = "ChildLabourData",
-            "..." = "..."
-          )
-        ),
-      ),
-      mainPanel(
-        tabsetPanel(
-        tabPanel("Perdict Fatilities",
-                 # Output: Formatted text for caption ----
-                 #h3("Paralle plot"),
-                 #verbatimTextOutput("summaryFatility"),
-                 plotOutput("CompareFatilitiesInspectors"),
-                 plotOutput("CompareFatilitiesInspections")
-                 #plotOutput("ParallePlot"),
-                 #tableOutput("TableData")
-        ),
-        tabPanel("Perdict Injuries",
-                 # Output: Formatted text for caption ----
-                 #h3("Paralle plot"),
-                 verbatimTextOutput("summaryInjury"),
-                 plotOutput("CompareInjuriesInspectors"),
-                 plotOutput("CompareInjuriesInspections")
-                 #plotOutput("ParallePlot"),
-                 #tableOutput("TableData")
-        )
-      ))
+      )
     )
   )
 )
 
 # Define server logic ----
 server <- function(input, output) {
-  datasetInput <- reactive({
-    if (input$SelectTopic == "HealthSafetyData") {
-      return(HealtySafetyCombinedData)
-    }
-
-    if (input$SelectTopic == "ChildLabourData") {
-
-    }
-  })
   
-  datasetInputMean <- reactive({
-    if (input$SelectTopic == "HealthSafetyData") {
-      return(HealtySafetyCombinedDataMean)
-    }
-    
-    if (input$SelectTopic == "ChildLabourData") {
-      
-    }
+  r <- reactiveValues(
+    df = NULL,
+    dfMean = NULL
+  )
+
+  datasetInput <- callModule(Import_Data, "ImportData")
+
+  observeEvent(datasetInput$trigger, {
+    req(datasetInput$trigger > 0)
+    r$df <- datasetInput$datasetInput
+    r$dfMean <- datasetInput$datasetInputMean
   })
 
-  output$ParallePlot <- renderPlot({
-    ggparcoord(datasetInput(),
-               columns = 3:6, 
-               groupColumn = 1,
-               scale="center",
-               showPoints = TRUE, 
-               alphaLines = 0.3
-    )+
-      theme_ipsum()
-  })
-  
-  output$ParallePlotMean <- renderPlot({
-    ggparcoord(datasetInputMean(),
-               columns = 2:5, 
-               groupColumn = 1,
-               scale="center",
-               showPoints = TRUE, 
-               alphaLines = 0.3
-    )+
-      theme_ipsum()
-  })
-
-  output$CompareFatilitiesInspections <- renderPlot({
-    ggplot(datasetInput(),
-           aes(y = TotalFatilitiesNormP100K, 
-               x = InspectionsPerInspector,
-               color = Year,
-               alpha = 0.5)
-    ) + 
-      geom_point() +
-      geom_smooth(method=lm,
-                  se = F) +
-      facet_wrap(~Country) +
-      theme_bw()
-  })
-  
-  
-  output$CompareFatilitiesInspectors <- renderPlot({
-    ggplot(datasetInput(),
-           aes(y = TotalFatilitiesNormP100K, 
-               x = LaborInspectorsNormP10K,
-               color = Year,
-               alpha = 0.5)
-    ) + 
-      geom_point() +
-      geom_smooth(method=lm,
-                  se = F) +
-      facet_wrap(~Country) +
-      theme_bw()
-  })
-  
-  output$CompareInjuriesInspections <- renderPlot({
-    ggplot(datasetInput(),
-           aes(y = TotalInjuriesNormP100K, 
-               x = InspectionsPerInspector,
-               color = Year,
-               alpha = 0.5)
-    ) + 
-      geom_point() +
-      geom_smooth(method=lm,
-                  se = F) +
-      facet_wrap(~Country) +
-      theme_bw()
-  })
-  
-  output$CompareInjuriesInspectors <- renderPlot({
-    ggplot(datasetInput(),
-           aes(y = TotalInjuriesNormP100K, 
-               x = LaborInspectorsNormP10K,
-               color = Year,
-               alpha = 0.5)
-    ) + 
-      geom_point() +
-      geom_smooth(method=lm,
-                  se = F) +
-      facet_wrap(~Country) +
-      theme_bw()
-  })
-  
-  output$summaryFatility <- renderPrint({
-    dataset <- datasetInput()
-    summary(lm(TotalFatilitiesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = dataset))
-  })
-  
-  output$summaryInjury <- renderPrint({
-    dataset <- datasetInput()
-    summary(lm(TotalInjuriesNormP100K ~ LaborInspectorsNormP10K * InspectionsPerInspector, data = dataset))
-  })
-
-  output$TableData <- renderTable({
-    datasetInput()
-  })
-  output$TableDataMean <- renderTable({
-    datasetInputMean()
-  })
-  
-
-  
+  callModule(Summary_of_Data, "Sum", reactive(r$df))
+  callModule(Summary_of_Data_Raw, "SumRaw", reactive(r$df))
+  callModule(plot_Paralle, "Paralle_Plot", reactive(r$df))
+  callModule(plot_Paralle_Mean, "Paralle_Plot_Mean", reactive(r$dfMean))
+  callModule(Table_Data, "Table_With_Data", reactive(r$df))
+  callModule(Table_Data_Mean, "Table_With_Mean_Data", reactive(r$dfMean))
+  callModule(Predict_All_Country, "Predict_Country", reactive(r$df))
+  callModule(Country_Analysis, "Country_Analysis", reactive(r$df))
 }
 
-# Run the application
+# Run the application ----
 shinyApp(ui = ui, server = server)

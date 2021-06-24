@@ -71,7 +71,7 @@ CombinedData <- Fatilities %>%
   dplyr::full_join(NubLaborInspections, by = NULL, copy = FALSE, keep = FALSE) %>%
   dplyr::full_join(InspectionsPerInspector, by = NULL, copy = FALSE, keep = FALSE)
 
-col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "sex", "LaborInspectorsNormP10K", "InspectionsPerInspector", "LaborInspections")
+col_order <- c("ref_area", "ref_area.label", "classif1", "time", "TotalFatilitiesNormP100K", "LaborInspectorsNormP10K", "InspectionsPerInspector", "LaborInspections")
 
 CombinedData <- CombinedData[, col_order]
 
