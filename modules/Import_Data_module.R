@@ -8,7 +8,7 @@ Import_Data_UI <- function(id) {
       label = "Choose a Topic:",
       choices = c(
         "Health and Safety" = "HealthSafetyData",
-        "Child Labour" = "ChildLabourData",
+        "Child Labour (example not implemented)" = "ChildLabourData",
         "..." = "..."
       ),
     )
@@ -20,7 +20,7 @@ Import_Data_UI <- function(id) {
 
 Import_Data <- function(input, output, session) {
   ns <- session$ns
-  #print("hi it works")
+  
   toReturn <- reactiveValues(
     datasetInput = NULL,
     datasetInputMean = NULL,
@@ -30,15 +30,12 @@ Import_Data <- function(input, output, session) {
   observeEvent(input$SelectTopic, {
     req(!is.null(input$SelectTopic))
     topic <- input$SelectTopic
-    #browser()
+
     if (topic == "HealthSafetyData") {
       
       df <- GetHealthData(df)
 
       dfMean <- df %>%
-        #drop_na(Fatilities_per_100K_workers) %>%
-        #subset(ave(Country, Country, FUN = length) > 4) #%>%
-        #drop_na() #%>%
         group_by(Country) %>%
         dplyr::summarize(
          mean_Fatilities_per_100K_workers = mean(Fatilities_per_100K_workers),
@@ -47,27 +44,9 @@ Import_Data <- function(input, output, session) {
          mean_Inspections_Per_Inspector = mean(Inspections_Per_Inspector)
         )
       
-      # dfMeanDep2 <- df1 %>%
-      #   drop_na(Injuries_Per_100K_workers) %>%
-      #   group_by(Country) %>%
-      #   dplyr::summarize(
-      #     #mean_Fatilities_per_100K_workers = mean(Fatilities_per_100K_workers),
-      #     mean_Injuries_Per_100K_workers = mean(Injuries_Per_100K_workers),
-      #     mean_Labor_Inspectors_Per_10K_worker = mean(Labor_Inspectors_Per_10K_workers),
-      #     mean_Inspections_Per_Inspector = mean(Inspections_Per_Inspector)
-      #   )
-      
-      # dfMean <- dfMeanDep1 %>%
-      #   dplyr::full_join(dfMeanDep2, by = c("Country", "mean_Labor_Inspectors_Per_10K_worker","mean_Inspections_Per_Inspector"), copy = FALSE, keep = FALSE)
-      # 
-      # col_order <- c("Country", "mean_Fatilities_per_100K_workers", "mean_Injuries_Per_100K_workers", "mean_Labor_Inspectors_Per_10K_worker", "mean_Inspections_Per_Inspector")
-      
-      #dfMean <- dfMean[, col_order]
-      
       toReturn$datasetInput <- df
       toReturn$datasetInputMean <- dfMean
       toReturn$trigger <- toReturn$trigger + 1
-      #browser()
     }
   })
 
@@ -160,13 +139,6 @@ GetHealthData <- function(df, dfMean) {
   col_order <- c("ref_area", "ref_area.label", "classif1", "time", "Fatilities_per_100K_workers", "Injuries_Per_100K_workers", "Labor_Inspectors_Per_10K_workers", "Inspections_Per_Inspector")
 
   df <- df[, col_order]
-  
-  # RemoveIndependentVariableNA <- function(data, desiredCols) {
-  #   completeVec <- complete.cases(data[, desiredCols])
-  #   return(data[completeVec, ])
-  # }
-  # 
-  # df <- RemoveIndependentVariableNA(df, c("Labor_Inspectors_Per_10K_workers", "Inspections_Per_Inspector"))
 
   df <- df %>%
     rename(

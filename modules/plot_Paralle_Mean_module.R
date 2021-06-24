@@ -20,13 +20,11 @@ plot_Paralle_Mean <- function(input, output, session, dfMean) {
               columns = 2:5,
               groupColumn = 1,
               scale = "uniminmax",
-              #scale = "globalminmax",
               boxplot = FALSE,
               showPoints = TRUE,
               alphaLines = 0.3,
-              #title = "Health and Safty Data normalized between 0 and 1"
     ) +
-     theme_ipsum()
+     theme_bw()
     
     plotly_Mean <- ggplotly(plot_Mean, tooltip = c("Country")) %>%
       highlight(on = "plotly_hover", color = "red" )

@@ -20,14 +20,12 @@ plot_Paralle <- function(input, output, session, df) {
       ggparcoord(
         columns = 3:6,
         groupColumn = 1,
-        #scale = "uniminmax",
         scale = "globalminmax",
         boxplot = FALSE,
         showPoints = TRUE,
         alphaLines = 0.3,
-        #title = "Health and Safty Data normalized between 0 and 1"
       ) +
-      theme_ipsum()
+      theme_bw()
     
     plotly <- ggplotly(plot, tooltip = c("Country")) %>%
       highlight(on = "plotly_hover", color = "red" )
