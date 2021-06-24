@@ -38,7 +38,6 @@ plot_Paralle <- function(input, output, session, df) {
     str1 <- paste("In the following plot the 'Health and Safty' data has been normalized between 0 and 1")
     Explanation_Paralle_Plot <- HTML(paste(str1, sep = '<br/>'))
     
-    #browser()
     return(Explanation_Paralle_Plot)
   })
 }

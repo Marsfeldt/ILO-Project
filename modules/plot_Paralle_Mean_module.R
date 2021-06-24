@@ -37,7 +37,6 @@ plot_Paralle_Mean <- function(input, output, session, dfMean) {
     str2 <- paste("In the following plot the 'Health and Safty' data has been normalized between 0 and 1. Where 1 is the country with the highes number in the given variable, and 0 is the country with the lowst number in the given variable. The other countries are then normalized between these two extremes. We have only included countries that have reported on the each variable for a minimum of 5 years.")
     Explanation_Paralle_Plot_Mean <- HTML(paste(str1, str2, sep = '<br/>'))
     
-    #browser()
     return(Explanation_Paralle_Plot_Mean)
   })
 }
