@@ -20,7 +20,7 @@ plot_Paralle <- function(input, output, session, df) {
       ggparcoord(
         columns = 3:6,
         groupColumn = 1,
-        scale = "globalminmax",
+        scale = "uniminmax",
         boxplot = FALSE,
         showPoints = TRUE,
         alphaLines = 0.3,
