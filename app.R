@@ -12,7 +12,7 @@ library(Rilostat)
 library(plotly)
 #library(hrbrthemes)
 library(GGally)
-library(viridis)
+#library(viridis)
 library(broom)
 
 # shiny.fullstacktrace: prints full error messages from R Shiny for debugging.
@@ -36,7 +36,7 @@ source("modules/Country_Analysis_module.R", local = T)
 
 # # Define UI for application ----
 ui <- navbarPage("ILO - Project",
-  theme = shinytheme("yeti"),
+  #theme = shinytheme("yeti"),
 
   # Overview tap where the user can get an overview of the data -----
   tabPanel(
