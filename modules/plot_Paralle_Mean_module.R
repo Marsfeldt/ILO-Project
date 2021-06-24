@@ -34,7 +34,7 @@ plot_Paralle_Mean <- function(input, output, session, dfMean) {
   
   output$Explanation_Paralle_Plot_Mean <- renderUI({
     str1 <- paste(h3("Normalized Parallel Plot"))
-    str2 <- paste("In the following plot the 'Health and Safty' data has been normalized between 0 and 1. Where 1 is the country with the highes number in the given variable, and 0 is the country with the lowst number in the given variable. The other countries are then normalized between these two extremes. We have only included countries that have reported on the each variable for a minimum of 5 years.")
+    str2 <- paste("In the following plot we have only included countries that have reported on the each variable for a minimum of 5 years. The data has been normalized between 0 and 1. Where 1 is the country with the highes number in the given variable, and 0 is the country with the lowst number in the given variable. The other countries are then normalized between these two extremes.")
     Explanation_Paralle_Plot_Mean <- HTML(paste(str1, str2, sep = '<br/>'))
     
     return(Explanation_Paralle_Plot_Mean)

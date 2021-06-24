@@ -5,9 +5,9 @@ Predict_All_Country_UI <- function(id) {
   list(
     fluidRow(
       radioButtons(ns("DependentVariableRadioButton"),
-        label = "Dependent variable",
+        label = h3("Dependent variable"),
         choices = list(
-          "Fatilities" = 1,
+          "Fatalities" = 1,
           "Injuries" = 2
         ), inline = TRUE,
         selected = 1
@@ -28,8 +28,7 @@ Predict_All_Country <- function(input, output, session, df) {
     DependentVariableInput <- input$DependentVariableRadioButton
 
     if (DependentVariableInput == 1) {
-      var$Variable <- "Fatilities_per_100K_workers"
-      # browser()
+      var$Variable <- "Fatalities_per_100K_workers"
     }
 
     if (DependentVariableInput == 2) {
@@ -41,8 +40,6 @@ Predict_All_Country <- function(input, output, session, df) {
     Variable <- var$Variable
 
     datasetInput <- df()
-    
-    #browser()
 
     plot <- ggplot(
       datasetInput,
@@ -71,8 +68,6 @@ Predict_All_Country <- function(input, output, session, df) {
     Variable <- var$Variable
     
     datasetInput <- df()
-    
-    #browser()
     
     plot <- ggplot(
       datasetInput,

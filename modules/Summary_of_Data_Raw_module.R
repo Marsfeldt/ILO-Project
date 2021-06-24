@@ -7,7 +7,7 @@ Summary_of_Data_Raw_UI <- function(id) {
       radioButtons(ns("DependentVariableButton"),
                    label = h3("Dependent variable"),
                    choices = list(
-                     "Fatilities" = 1,
+                     "Fatalities" = 1,
                      "Injuries" = 2
                    ), inline = TRUE,
                    selected = 1
@@ -32,10 +32,10 @@ Summary_of_Data_Raw <- function(input, output, session, df) {
     DependentVariableInput <- input$DependentVariableButton
     
     if (DependentVariableInput == 1) {
-      var$DepVariable <- "Fatilities_per_100K_workers"
+      var$DepVariable <- "Fatalities_per_100K_workers"
       var$IndepVariable1 <- "Labor_Inspectors_Per_10K_workers"
       var$IndepVariable2 <- "Inspections_Per_Inspector"
-      var$Name <- "Fatilities"
+      var$Name <- "Fatalities"
       var$Norm <- "per 100.000 workers"
     }
     
@@ -65,13 +65,13 @@ Summary_of_Data_Raw <- function(input, output, session, df) {
   
   output$Explanation_Summary <- renderUI({
     str0 <- paste(h3("Predictions for ", var$Name))
-    str1 <- paste("The following show the full prediction for", var$Name)
-    str2 <- paste("Where dataset[[DepVariable]] = ", var$Name)
-    str3 <- paste("Where dataset[[IndepVariable1]] = 'number of labor inspectors per 10.000 workers'")
-    str4 <- paste("Where dataset[[IndepVariable2]] = number of inspections per labor inspector")
-    Explanation_Summary <- HTML(paste(str0, str1, str2, str3, str4, sep = '<br/>'))
+    str1 <- paste("Based on the data provided by ILO, we have only included countries that have reported on the each variable for a minimum of 5 years.")
+    str2 <- paste("The following show the full prediction for", var$Name)
+    str3 <- paste("Where dataset[[DepVariable]] = ", var$Name)
+    str4 <- paste("Where dataset[[IndepVariable1]] = 'number of labor inspectors per 10.000 workers'")
+    str5 <- paste("Where dataset[[IndepVariable2]] = number of inspections per labor inspector")
+    Explanation_Summary <- HTML(paste(str0, str1, str2, str3, str4, str5, sep = '<br/>'))
     
-    #browser()
     return(Explanation_Summary)
   })
 }

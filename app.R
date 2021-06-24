@@ -10,9 +10,7 @@ library(fs)
 library(R.utils)
 library(Rilostat)
 library(plotly)
-#library(hrbrthemes)
 library(GGally)
-#library(viridis)
 library(broom)
 
 # shiny.fullstacktrace: prints full error messages from R Shiny for debugging.
@@ -24,7 +22,7 @@ options(shiny.fullstacktrace = TRUE)
 
 # import modules:
 source("modules/Import_Data_module.R", local = T)
-source("modules/Overview_Main_module.R", local = T)
+#source("modules/Overview_Main_module.R", local = T)
 source("modules/Summary_of_Data_module.R", local = T)
 source("modules/Summary_of_Data_Raw_module.R", local = T)
 source("modules/Table_Data_module.R", local = T)

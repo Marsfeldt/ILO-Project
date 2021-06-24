@@ -7,7 +7,7 @@ Country_Analysis_UI <- function(id) {
       radioButtons(ns("DependentVariableRadioButton"),
         label = h3("Dependent variable"),
         choices = list(
-          "Fatilities" = 1,
+          "Fatalities" = 1,
           "Injuries" = 2
         ), inline = TRUE,
         selected = 1
@@ -42,10 +42,10 @@ Country_Analysis <- function(input, output, session, df) {
     DependentVariableInput <- input$DependentVariableRadioButton
 
     if (DependentVariableInput == 1) {
-      var$DepVariable <- "Fatilities_per_100K_workers"
+      var$DepVariable <- "Fatalities_per_100K_workers"
       var$IndepVariable1 <- "Labor_Inspectors_Per_10K_workers"
       var$IndepVariable2 <- "Inspections_Per_Inspector"
-      var$Name <- "Fatilities"
+      var$Name <- "Fatalities"
       var$Norm <- "per 100.000 workers"
     }
 
@@ -93,7 +93,6 @@ Country_Analysis <- function(input, output, session, df) {
         se = F
       ) +
       theme(axis.title = element_blank()) +
-      # facet_wrap(~Country) +
       theme_bw()
 
     plotly <- ggplotly(plot, tooltip = c("Year")) %>%
@@ -125,7 +124,6 @@ Country_Analysis <- function(input, output, session, df) {
         se = F
       ) +
       theme(axis.title = element_blank()) +
-      # facet_wrap(~Country) +
       theme_bw()
 
     plotly <- ggplotly(plot, tooltip = c("Year")) %>%
@@ -158,8 +156,9 @@ Country_Analysis <- function(input, output, session, df) {
     Rsquared <- round(summary(result)$r.squared, 4) * 100
 
     str0 <- paste(h3("Predicted ", var$Name, "for ", SelectedCountry))
-    str1 <- paste("Based on the data provided by ILO. It is estimated that there will be ", tableSummary[1, 2], var$Name, var$Norm, ". However, if we increase the ", tableSummary[2, 1], "by 1, we predict that ", var$Name, "will change by ", tableSummary[2, 2], ". If we increase the", tableSummary[3, 1], "by 1, we predict that ", var$Name, "will change by ", tableSummary[3, 2])
-    str2 <- paste("If we combint the two, meaning both increasing ", tableSummary[2, 1], "and", tableSummary[3, 1], "by 1, we predict that ", var$Name, "will change by ", tableSummary[4, 2])
+    str1 <- paste("Based on the data provided by ILO, we have only included countries that have reported on the each variable for a minimum of 5 years.") 
+    str2 <- paste("Using a linear regression, it is estimated that there will be ", tableSummary[1, 2], var$Name, var$Norm, ". However, if we increase the ", tableSummary[2, 1], "by 1, we predict that ", var$Name, "will change by ", tableSummary[2, 2], ". If we increase the", tableSummary[3, 1], "by 1, we predict that ", var$Name, "will change by ", tableSummary[3, 2])
+    #str2 <- paste("If we combint the two, meaning both increasing ", tableSummary[2, 1], "and", tableSummary[3, 1], "by 1, we predict that ", var$Name, "will change by ", tableSummary[4, 2])
     str3 <- paste("However, this only explanes ", Rsquared, "% of the variance in the data, meaning other factors must play a role in the number of ", var$Name, "aswell.")
     sumCountry <- HTML(paste(str0, str1, str2, str3, sep = "<br/>"))
 

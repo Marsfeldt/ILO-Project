@@ -38,7 +38,7 @@ Import_Data <- function(input, output, session) {
       dfMean <- df %>%
         group_by(Country) %>%
         dplyr::summarize(
-         mean_Fatilities_per_100K_workers = mean(Fatilities_per_100K_workers),
+         mean_Fatalities_per_100K_workers = mean(Fatalities_per_100K_workers),
          mean_Injuries_Per_100K_workers = mean(Injuries_Per_100K_workers),
          mean_Labor_Inspectors_Per_10K_worker = mean(Labor_Inspectors_Per_10K_workers),
          mean_Inspections_Per_Inspector = mean(Inspections_Per_Inspector)
@@ -56,8 +56,8 @@ Import_Data <- function(input, output, session) {
 GetHealthData <- function(df, dfMean) {
 
   # Import Data ----
-  # Data for Fatilities ----
-  Fatilities <- get_ilostat(
+  # Data for Fatalities ----
+  Fatalities <- get_ilostat(
     id = "SDG_F881_SEX_MIG_RT_A",
     segment = "indicator",
     time_format = "num",
@@ -74,7 +74,7 @@ GetHealthData <- function(df, dfMean) {
       label_ilostat(code = "ref_area"),
     by = "ref_area"
     ) %>%
-    rename(Fatilities_per_100K_workers = obs_value)
+    rename(Fatalities_per_100K_workers = obs_value)
 
   # Data for Injuries ------
   Injuries <- get_ilostat(
@@ -131,12 +131,12 @@ GetHealthData <- function(df, dfMean) {
     rename(Inspections_Per_Inspector = obs_value)
 
   # Combine the Data -----
-  df <- Fatilities %>%
+  df <- Fatalities %>%
     dplyr::full_join(Injuries, by = c("ref_area", "time", "ref_area.label", "classif1"), copy = FALSE, keep = FALSE) %>%
     dplyr::full_join(LaborInspectors, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE) %>%
     dplyr::full_join(Inspections_Per_Inspector, by = c("ref_area", "time", "ref_area.label"), copy = FALSE, keep = FALSE)
 
-  col_order <- c("ref_area", "ref_area.label", "classif1", "time", "Fatilities_per_100K_workers", "Injuries_Per_100K_workers", "Labor_Inspectors_Per_10K_workers", "Inspections_Per_Inspector")
+  col_order <- c("ref_area", "ref_area.label", "classif1", "time", "Fatalities_per_100K_workers", "Injuries_Per_100K_workers", "Labor_Inspectors_Per_10K_workers", "Inspections_Per_Inspector")
 
   df <- df[, col_order]
 
