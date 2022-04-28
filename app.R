@@ -21,8 +21,8 @@ options(shiny.fullstacktrace = TRUE)
 # https://www.ilo.org/ilostat-files/Documents/ILOSTAT_BulkDownload_Guidelines.pdf
 
 # import modules:
+source("modules/Welcome_module.R", local = T)
 source("modules/Import_Data_module.R", local = T)
-#source("modules/Overview_Main_module.R", local = T)
 source("modules/Summary_of_Data_module.R", local = T)
 source("modules/Summary_of_Data_Raw_module.R", local = T)
 source("modules/Table_Data_module.R", local = T)
@@ -44,9 +44,7 @@ ui <- navbarPage("ILO - Project",
       # Sidebar panel for inputs
       sidebarPanel(
         width = 3,
-        helpText("Welcome! The International Labor Organization (ILO) provides data on a long list of topics. For this prototype we have decided to focus on Healt and Safety - with the possiblity to add more topics later. This side provides you with an oveverview of the data on the specific topic"),
-
-        # Input: Selector for choosing dataset
+        Welcome_UI("Welcome"),
         Import_Data_UI("ImportData")
       ),
 
